@@ -1,5 +1,5 @@
 import React from 'react'
-import { Crown } from 'lucide-react'
+import { Crown, Shield, UserCheck, CircleDot } from 'lucide-react'
 import { ORDER_STATUS_LABELS, ORDER_STATUS_COLORS, STOCK_STATUS_LABELS } from '@/utils'
 
 /**
@@ -10,7 +10,7 @@ export function OrderStatusBadge({ status }) {
   const label = ORDER_STATUS_LABELS[status] || status
 
   return (
-    <span className={`badge ${colors.bg} ${colors.text} border ${colors.border}`}>
+    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold border ${colors.bg} ${colors.text} ${colors.border}`}>
       <span className={`w-1.5 h-1.5 rounded-full ${colors.dot} mr-1.5`} />
       {label}
     </span>
@@ -22,46 +22,44 @@ export function OrderStatusBadge({ status }) {
  */
 export function StockStatusBadge({ status }) {
   const styles = {
-    disponible: 'stock-disponible',
-    bajo: 'stock-bajo',
-    agotado: 'stock-agotado',
+    disponible: 'bg-emerald-100 text-emerald-800 border-emerald-200',
+    bajo: 'bg-amber-100 text-amber-800 border-amber-200',
+    agotado: 'bg-rose-100 text-rose-800 border-rose-200',
   }
 
   return (
-    <span className={styles[status] || 'stock-disponible'}>
+    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold border ${styles[status] || styles.disponible}`}>
       {STOCK_STATUS_LABELS[status] || status}
     </span>
   )
 }
 
 /**
- * Badge de rol de usuario con distinción para el Propietario (Owner)
+ * Badge de rol de usuario redondeado (rounded-full) y estilizado
  */
 export function RoleBadge({ role, isOwner = false }) {
   if (isOwner) {
     return (
-      <span className="badge bg-gradient-to-r from-amber-100 via-rose-100 to-amber-100 text-amber-900 border border-amber-300/80 shadow-sm font-bold flex items-center gap-1">
-        <Crown className="w-3 h-3 text-amber-600 fill-amber-500" />
-        Propietario / Admin
+      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black bg-amber-100 text-amber-900 border border-amber-300 shadow-2xs">
+        <Crown className="w-3 h-3 text-amber-700 fill-amber-700" />
+        <span>PROPIETARIO</span>
       </span>
     )
   }
 
-  const styles = {
-    administrador: 'bg-purple-100 text-purple-800 border border-purple-200 font-semibold',
-    cajero: 'bg-blue-100 text-blue-800 border border-blue-200 font-medium',
-    empleado: 'bg-blue-100 text-blue-800 border border-blue-200 font-medium',
-  }
-
-  const labels = {
-    administrador: 'Administrador',
-    cajero: 'Cajero',
-    empleado: 'Cajero',
+  if (role === 'administrador') {
+    return (
+      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black bg-purple-100 text-purple-900 border border-purple-300 shadow-2xs">
+        <Shield className="w-3 h-3 text-purple-700 fill-purple-700/30" />
+        <span>ADMINISTRADOR</span>
+      </span>
+    )
   }
 
   return (
-    <span className={`badge ${styles[role] || 'bg-gray-100 text-gray-700'}`}>
-      {labels[role] || role}
+    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black bg-blue-100 text-blue-900 border border-blue-300 shadow-2xs">
+      <UserCheck className="w-3 h-3 text-blue-700" />
+      <span>CAJERO</span>
     </span>
   )
 }
@@ -71,16 +69,16 @@ export function RoleBadge({ role, isOwner = false }) {
  */
 export function Badge({ children, variant = 'gray' }) {
   const variants = {
-    gray: 'bg-gray-100 text-gray-700',
-    primary: 'bg-primary-100 text-primary-700',
-    success: 'bg-emerald-100 text-emerald-700',
-    warning: 'bg-amber-100 text-amber-700',
-    danger: 'bg-red-100 text-red-700',
-    gold: 'bg-amber-100 text-amber-700',
+    gray: 'bg-gray-100 text-gray-700 border-gray-200',
+    primary: 'bg-purple-100 text-purple-700 border-purple-200',
+    success: 'bg-emerald-100 text-emerald-700 border-emerald-200',
+    warning: 'bg-amber-100 text-amber-700 border-amber-200',
+    danger: 'bg-rose-100 text-rose-700 border-rose-200',
+    gold: 'bg-amber-100 text-amber-900 border-amber-300',
   }
 
   return (
-    <span className={`badge ${variants[variant] || variants.gray}`}>
+    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold border ${variants[variant] || variants.gray}`}>
       {children}
     </span>
   )
