@@ -5,6 +5,7 @@ import { z } from 'zod'
 import { Lock, Eye, EyeOff, KeyRound, ShieldAlert } from 'lucide-react'
 import Modal from '@/components/ui/Modal'
 import { resetUserPassword } from '@/lib/users'
+import { useAuthStore } from '@/store/authStore'
 import toast from 'react-hot-toast'
 
 const resetSchema = z
@@ -34,9 +35,17 @@ export default function ResetPasswordModal({ isOpen, onClose, targetUser, onSucc
     },
   })
 
+  const { isOwner } = useAuthStore()
+  const userIsOwner = isOwner()
+
   if (!targetUser) return null
 
   const onSubmit = async (values) => {
+    if (!userIsOwner && targetUser.role === 'administrador') {
+      toast.error('Solo el Propietario del Sistema puede restablecer la contraseña de un Administrador.')
+      return
+    }
+
     try {
       setSubmitting(true)
       await resetUserPassword(targetUser.id, values.newPassword, targetUser.full_name)

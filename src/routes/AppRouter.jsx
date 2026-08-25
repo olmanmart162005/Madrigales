@@ -76,10 +76,31 @@ export default function AppRouter() {
             <Route path="pedidos" element={<OrdersPage />} />
             <Route path="pedidos/nuevo" element={<NewOrderPage />} />
             <Route path="pedidos/:id" element={<OrderDetailPage />} />
-            <Route path="calendario" element={<CalendarPage />} />
+            <Route
+              path="calendario"
+              element={
+                <ProtectedRoute adminOnly>
+                  <CalendarPage />
+                </ProtectedRoute>
+              }
+            />
             <Route path="productos" element={<ProductsPage />} />
-            <Route path="almacen" element={<InventoryPage />} />
-            <Route path="reportes" element={<ReportsPage />} />
+            <Route
+              path="almacen"
+              element={
+                <ProtectedRoute adminOnly>
+                  <InventoryPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="reportes"
+              element={
+                <ProtectedRoute adminOnly>
+                  <ReportsPage />
+                </ProtectedRoute>
+              }
+            />
             <Route
               path="usuarios"
               element={

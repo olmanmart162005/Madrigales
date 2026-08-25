@@ -1,0 +1,50 @@
+{
+  "id": "/",
+  "name": "Madrigales Pastelería",
+  "short_name": "Madrigales",
+  "description": "Sistema de gestión y punto de venta de Madrigales Pastelería",
+  "lang": "es-HN",
+  "dir": "ltr",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": [
+    "window-controls-overlay",
+    "standalone",
+    "minimal-ui"
+  ],
+  "theme_color": "#7C3AED",
+  "background_color": "#FFFFFF",
+  "orientation": "portrait-primary",
+  "categories": [
+    "business",
+    "productivity",
+    "food"
+  ],
+  "icons": [
+    {
+      "src": "/icons/pwa-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/pwa-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/maskable-icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icons/maskable-icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

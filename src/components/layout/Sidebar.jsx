@@ -9,14 +9,14 @@ import { useAuthStore } from '@/store/authStore'
 import { getInitials } from '@/utils'
 import toast from 'react-hot-toast'
 
-// Rutas principales
-const mainNavItems = [
-  { to: '/', icon: LayoutDashboard, label: 'Dashboard', exact: true },
-  { to: '/pedidos', icon: ShoppingBag, label: 'Pedidos' },
-  { to: '/calendario', icon: Calendar, label: 'Calendario' },
-  { to: '/productos', icon: Package, label: 'Productos' },
-  { to: '/almacen', icon: Warehouse, label: 'Almacén' },
-  { to: '/reportes', icon: BarChart3, label: 'Reportes' },
+// Rutas base (accesibles según rol)
+const allNavItems = [
+  { to: '/', icon: LayoutDashboard, label: 'Dashboard', exact: true, cashier: true },
+  { to: '/pedidos', icon: ShoppingBag, label: 'Pedidos', cashier: true },
+  { to: '/productos', icon: Package, label: 'Productos', cashier: true },
+  { to: '/calendario', icon: Calendar, label: 'Calendario', cashier: false },
+  { to: '/almacen', icon: Warehouse, label: 'Almacén', cashier: false },
+  { to: '/reportes', icon: BarChart3, label: 'Reportes', cashier: false },
 ]
 
 // Rutas de administración
@@ -26,8 +26,8 @@ const adminNavItems = [
 
 // Rutas de cuenta y ajustes
 const accountNavItems = [
-  { to: '/perfil', icon: User, label: 'Mi Perfil' },
-  { to: '/configuracion', icon: Settings, label: 'Configuración', adminOnly: true },
+  { to: '/perfil', icon: User, label: 'Mi Perfil', cashier: true },
+  { to: '/configuracion', icon: Settings, label: 'Configuración', cashier: false },
 ]
 
 export default function Sidebar({ mobileOpen, onMobileClose }) {
@@ -47,6 +47,10 @@ export default function Sidebar({ mobileOpen, onMobileClose }) {
 
   const admin = isAdmin()
   const owner = isOwner()
+
+  // Filtrar los items de navegación según si es Administrador o Cajero
+  const visibleNavItems = allNavItems.filter((item) => admin || item.cashier)
+  const visibleAccountItems = accountNavItems.filter((item) => admin || item.cashier)
 
   const renderRoleBadge = () => {
     if (owner) {
@@ -133,7 +137,7 @@ export default function Sidebar({ mobileOpen, onMobileClose }) {
 
         {/* Navegación Desktop */}
         <nav className="flex-1 px-3.5 py-3 space-y-1.5 overflow-y-auto scrollbar-thin">
-          {mainNavItems.map((item) => (
+          {visibleNavItems.map((item) => (
             <NavLink
               key={item.to}
               to={item.to}
@@ -156,7 +160,7 @@ export default function Sidebar({ mobileOpen, onMobileClose }) {
             </NavLink>
           ))}
 
-          {/* Sección de Administración */}
+          {/* Sección de Administración (Solo para Administradores) */}
           {admin && (
             <>
               <div className="pt-3 pb-1 px-3">
@@ -195,57 +199,54 @@ export default function Sidebar({ mobileOpen, onMobileClose }) {
           </div>
 
           {/* Perfil y Configuración */}
-          {accountNavItems
-            .filter((item) => !item.adminOnly || admin)
-            .map((item) => (
-              <NavLink
-                key={item.to}
-                to={item.to}
-                className={({ isActive }) =>
-                  `flex items-center gap-3.5 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 group relative ${
-                    isActive
-                      ? 'bg-gradient-to-r from-[#7C3AED] via-[#A855F7] to-[#C026D3] text-white shadow-[0_8px_20px_rgba(124,58,237,0.22)]'
-                      : 'text-slate-600 hover:bg-purple-500/8 hover:text-purple-700'
-                  }`
-                }
-              >
-                {({ isActive }) => (
-                  <>
-                    <item.icon className={`w-5 h-5 flex-shrink-0 transition-transform duration-200 group-hover:scale-110 ${isActive ? 'text-white' : 'text-slate-500 group-hover:text-purple-600'}`} />
-                    <span className="truncate flex-1 tracking-tight">{item.label}</span>
-                    <RightArrow className={`w-4 h-4 flex-shrink-0 transition-transform duration-200 group-hover:translate-x-0.5 ${isActive ? 'text-white/90' : 'text-slate-300 group-hover:text-purple-500'}`} />
-                  </>
-                )}
-              </NavLink>
-            ))}
+          {visibleAccountItems.map((item) => (
+            <NavLink
+              key={item.to}
+              to={item.to}
+              className={({ isActive }) =>
+                `flex items-center gap-3.5 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 group relative ${
+                  isActive
+                    ? 'bg-gradient-to-r from-[#7C3AED] via-[#A855F7] to-[#C026D3] text-white shadow-[0_8px_20px_rgba(124,58,237,0.22)]'
+                    : 'text-slate-600 hover:bg-purple-500/8 hover:text-purple-700'
+                }`
+              }
+            >
+              {({ isActive }) => (
+                <>
+                  <item.icon className={`w-5 h-5 flex-shrink-0 transition-transform duration-200 group-hover:scale-110 ${isActive ? 'text-white' : 'text-slate-500 group-hover:text-purple-600'}`} />
+                  <span className="truncate flex-1 tracking-tight">{item.label}</span>
+                  <RightArrow className={`w-4 h-4 flex-shrink-0 transition-transform duration-200 group-hover:translate-x-0.5 ${isActive ? 'text-white/90' : 'text-slate-300 group-hover:text-purple-500'}`} />
+                </>
+              )}
+            </NavLink>
+          ))}
         </nav>
 
-        {/* Botón Cerrar Sesión Fijo Abajo */}
+        {/* Botón de Cerrar Sesión Fijo en Desktop */}
         <div className="p-3.5 border-t border-gray-100/90 bg-white">
           <button
             onClick={handleSignOut}
-            className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-500 hover:text-red-600 hover:bg-red-50/80 transition-all cursor-pointer"
-            title="Cerrar sesión"
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold text-gray-700 hover:bg-rose-50 hover:text-rose-600 transition-all duration-150 group cursor-pointer border border-transparent hover:border-rose-100"
           >
-            <LogOut className="w-4 h-4 flex-shrink-0" />
-            <span>Cerrar Sesión</span>
+            <LogOut className="w-4 h-4 text-gray-400 group-hover:text-rose-600 transition-colors" />
+            <span className="truncate">Cerrar Sesión</span>
           </button>
         </div>
       </aside>
 
       {/* ============================================================
-          2. MOBILE DRAWER COMPLETO (< 1024px)
-          *TOTALMENTE INTACTO Y FUNCIONAL*
+          2. MOBILE DRAWER (< 1024px)
+          Overlay y Menú Deslizante desde la Izquierda
           ============================================================ */}
       <div
-        className={`fixed inset-0 z-40 bg-black/50 backdrop-blur-xs transition-opacity duration-300 lg:hidden ${
+        className={`fixed inset-0 bg-black/60 backdrop-blur-xs z-50 transition-opacity duration-300 lg:hidden ${
           mobileOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
         }`}
         onClick={onMobileClose}
       />
 
       <aside
-        className={`fixed left-0 top-0 h-full w-[85vw] max-w-[320px] bg-white shadow-2xl z-50 transition-transform duration-300 ease-out flex flex-col lg:hidden ${
+        className={`fixed top-0 left-0 bottom-0 w-[280px] sm:w-[320px] bg-white z-50 shadow-2xl flex flex-col transition-transform duration-300 ease-in-out lg:hidden ${
           mobileOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
@@ -276,7 +277,7 @@ export default function Sidebar({ mobileOpen, onMobileClose }) {
 
         {/* Navegación Móvil */}
         <nav className="flex-1 px-4 py-4 space-y-2 overflow-y-auto scrollbar-thin">
-          {mainNavItems.map((item) => (
+          {visibleNavItems.map((item) => (
             <NavLink
               key={item.to}
               to={item.to}
@@ -300,7 +301,7 @@ export default function Sidebar({ mobileOpen, onMobileClose }) {
             </NavLink>
           ))}
 
-          {/* Administración en Móvil */}
+          {/* Administración en Móvil (Solo Administradores) */}
           {admin && (
             <>
               <div className="pt-4 pb-1 px-3">
@@ -339,30 +340,28 @@ export default function Sidebar({ mobileOpen, onMobileClose }) {
           </div>
 
           {/* Mi Perfil y Configuración en Móvil */}
-          {accountNavItems
-            .filter((item) => !item.adminOnly || admin)
-            .map((item) => (
-              <NavLink
-                key={item.to}
-                to={item.to}
-                onClick={onMobileClose}
-                className={({ isActive }) =>
-                  `flex items-center gap-3.5 px-4 py-3.5 rounded-xl text-sm font-semibold transition-all duration-200 ${
-                    isActive
-                      ? 'bg-gradient-to-r from-purple-600 via-purple-700 to-fuchsia-600 text-white shadow-md'
-                      : 'text-slate-700 hover:bg-purple-50 hover:text-purple-700'
-                  }`
-                }
-              >
-                {({ isActive }) => (
-                  <>
-                    <item.icon className={`w-5 h-5 flex-shrink-0 ${isActive ? 'text-white' : 'text-slate-500'}`} />
-                    <span className="flex-1 font-medium">{item.label}</span>
-                    {isActive && <RightArrow className="w-4 h-4 text-white/80 flex-shrink-0" />}
-                  </>
-                )}
-              </NavLink>
-            ))}
+          {visibleAccountItems.map((item) => (
+            <NavLink
+              key={item.to}
+              to={item.to}
+              onClick={onMobileClose}
+              className={({ isActive }) =>
+                `flex items-center gap-3.5 px-4 py-3.5 rounded-xl text-sm font-semibold transition-all duration-200 ${
+                  isActive
+                    ? 'bg-gradient-to-r from-purple-600 via-purple-700 to-fuchsia-600 text-white shadow-md'
+                    : 'text-slate-700 hover:bg-purple-50 hover:text-purple-700'
+                }`
+              }
+            >
+              {({ isActive }) => (
+                <>
+                  <item.icon className={`w-5 h-5 flex-shrink-0 ${isActive ? 'text-white' : 'text-slate-500'}`} />
+                  <span className="flex-1 font-medium">{item.label}</span>
+                  {isActive && <RightArrow className="w-4 h-4 text-white/80 flex-shrink-0" />}
+                </>
+              )}
+            </NavLink>
+          ))}
         </nav>
 
         {/* Footer del Drawer Móvil */}
@@ -393,15 +392,13 @@ export default function Sidebar({ mobileOpen, onMobileClose }) {
               </p>
               <div className="mt-1">{renderRoleBadge()}</div>
             </div>
-
-            <RightArrow className="w-4 h-4 text-purple-400 flex-shrink-0" />
           </Link>
 
           <button
             onClick={handleSignOut}
-            className="w-full flex items-center justify-center gap-2.5 px-4 py-3 rounded-xl text-xs font-bold text-red-600 bg-red-50/80 hover:bg-red-100 transition-colors cursor-pointer"
+            className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-xs font-bold text-rose-600 bg-rose-50/70 hover:bg-rose-100 border border-rose-100 transition-colors cursor-pointer"
           >
-            <LogOut className="w-4 h-4" />
+            <LogOut className="w-4 h-4 text-rose-600" />
             <span>Cerrar Sesión</span>
           </button>
         </div>

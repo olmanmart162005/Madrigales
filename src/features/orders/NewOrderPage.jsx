@@ -169,6 +169,15 @@ export default function NewOrderPage() {
       return
     }
 
+    const calculatedBalance = Math.max(0, total - amountPaid)
+
+    if (values.status === 'entregado' && calculatedBalance > 0) {
+      toast.error(
+        `No se puede marcar el pedido como "Entregado" porque tiene un saldo pendiente de ${formatCurrency(calculatedBalance, currencySymbol)}. Primero debe registrarse el pago completo.`
+      )
+      return
+    }
+
     try {
       setSubmitting(true)
       let orderNumber = await generateNextOrderNumber()
@@ -233,11 +242,25 @@ export default function NewOrderPage() {
 
       if (itemsError) throw itemsError
 
+      // Si se registró un abono inicial, guardarlo en order_payments para el historial financiero
+      if (amountPaid > 0) {
+        await supabase.from('order_payments').insert({
+          order_id: newOrder.id,
+          amount: amountPaid,
+          payment_method_id: values.payment_method_id || null,
+          payment_date: values.order_date || new Date().toISOString(),
+          notes: 'Pago / abono inicial registrado al crear el pedido',
+          created_by: user?.id || null,
+        })
+      }
+
       // Registrar Log de Actividad
       await logActivity({
         action: `Registró el pedido #${newOrder.order_number}${
           values.customer_name ? ` para ${values.customer_name}` : ''
-        } por un total de ${formatCurrency(total, currencySymbol)}`,
+        } por un total de ${formatCurrency(total, currencySymbol)}${
+          amountPaid > 0 ? ` con un abono de ${formatCurrency(amountPaid, currencySymbol)}` : ''
+        }`,
         entityType: 'order',
         entityId: newOrder.id,
         entityName: `#${newOrder.order_number}`,

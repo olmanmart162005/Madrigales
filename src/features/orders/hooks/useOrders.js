@@ -129,6 +129,8 @@ export function useOrders(filters = {}) {
 export function useOrder(id) {
   const [order, setOrder] = useState(null)
   const [items, setItems] = useState([])
+  const [payments, setPayments] = useState([])
+  const [adjustments, setAdjustments] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
@@ -138,6 +140,7 @@ export function useOrder(id) {
       setLoading(true)
       setError(null)
 
+      // 1. Obtener pedido
       const { data: orderData, error: orderErr } = await supabase
         .from('orders')
         .select(`
@@ -149,6 +152,7 @@ export function useOrder(id) {
 
       if (orderErr) throw orderErr
 
+      // 2. Obtener productos del pedido
       const { data: itemsData, error: itemsErr } = await supabase
         .from('order_items')
         .select('*')
@@ -157,8 +161,27 @@ export function useOrder(id) {
 
       if (itemsErr) throw itemsErr
 
+      // 3. Obtener pagos del pedido
+      const { data: paymentsData } = await supabase
+        .from('order_payments')
+        .select(`
+          *,
+          payment_methods(id, name)
+        `)
+        .eq('order_id', id)
+        .order('payment_date', { ascending: false })
+
+      // 4. Obtener ajustes del pedido
+      const { data: adjustmentsData } = await supabase
+        .from('order_adjustments')
+        .select('*')
+        .eq('order_id', id)
+        .order('created_at', { ascending: false })
+
       setOrder(orderData)
       setItems(itemsData || [])
+      setPayments(paymentsData || [])
+      setAdjustments(adjustmentsData || [])
     } catch (err) {
       console.error('Error fetching order details:', err)
       setError(err.message)
@@ -171,7 +194,7 @@ export function useOrder(id) {
     fetchOrder()
   }, [fetchOrder])
 
-  return { order, items, loading, error, refetch: fetchOrder }
+  return { order, items, payments, adjustments, loading, error, refetch: fetchOrder }
 }
 
 export function usePaymentMethods() {

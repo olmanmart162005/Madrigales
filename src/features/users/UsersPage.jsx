@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react'
-import { Plus, Search, Shield, User, Power, Edit2, Trash2, Crown, KeyRound, Clock, UserCheck } from 'lucide-react'
+import { Plus, Search, Shield, User, Power, Edit2, Trash2, Crown, KeyRound, Clock, UserCheck, Lock, ShieldCheck } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { logActivity } from '@/lib/activity'
 import { deleteSystemUser } from '@/lib/users'
@@ -49,8 +49,7 @@ export default function UsersPage() {
         creator_name: u.created_by ? profileMap.get(u.created_by) || 'Administrador' : null,
       }))
 
-      // DEFENSA EN PROFUNDIDAD:
-      // Si el usuario actual NO es el owner, nos aseguramos de que el owner no aparezca en la lista
+      // Si el usuario actual NO es el owner, ocultar la cuenta del owner
       if (!userIsOwner) {
         userList = userList.filter((u) => u.is_owner !== true)
       }
@@ -77,6 +76,12 @@ export default function UsersPage() {
 
     if (user.id === currentAuthUser?.id) {
       toast.error('No puedes desactivar tu propia cuenta en uso.')
+      return
+    }
+
+    // Regla: Administradores regulares solo pueden gestionar cajeros
+    if (!userIsOwner && user.role === 'administrador') {
+      toast.error('Solo el Propietario puede desactivar cuentas de Administrador.')
       return
     }
 
@@ -109,6 +114,14 @@ export default function UsersPage() {
   // Eliminar usuario
   const handleDeleteConfirm = async () => {
     if (!deleteCandidate) return
+
+    // Regla: Administradores regulares solo pueden eliminar cajeros
+    if (!userIsOwner && deleteCandidate.role === 'administrador') {
+      toast.error('Solo el Propietario puede eliminar cuentas de Administrador.')
+      setDeleteCandidate(null)
+      return
+    }
+
     try {
       setIsDeleting(true)
       await deleteSystemUser(deleteCandidate.id, deleteCandidate.full_name)
@@ -154,7 +167,7 @@ export default function UsersPage() {
               setEditingUser(null)
               setIsFormOpen(true)
             }}
-            className="btn-primary text-xs py-2.5 px-4 inline-flex items-center gap-2 self-start sm:self-auto"
+            className="btn-primary text-xs py-2.5 px-4 inline-flex items-center gap-2 self-start sm:self-auto cursor-pointer"
           >
             <Plus className="w-4 h-4" />
             <span>Nuevo Usuario</span>
@@ -210,6 +223,10 @@ export default function UsersPage() {
               ) : filteredUsers.length > 0 ? (
                 filteredUsers.map((u) => {
                   const isCurrent = u.id === currentAuthUser?.id
+                  const isTargetAdmin = u.role === 'administrador' || u.is_owner === true
+                  // Solo el Propietario puede gestionar Administradores; los Admins regulares solo pueden gestionar Cajeros
+                  const canManage = userIsOwner || (userIsAdmin && !isTargetAdmin)
+
                   return (
                     <tr key={u.id} className="hover:bg-purple-50/20 transition-colors">
                       {/* Avatar y Nombre */}
@@ -285,23 +302,22 @@ export default function UsersPage() {
                       </td>
 
                       {/* Acciones */}
-                      <td className="px-4 py-3.5 text-right">
+                      <td className="px-4 py-3.5 text-right whitespace-nowrap">
                         {u.is_owner ? (
-                          <span className="text-[10px] font-bold text-amber-600 italic">
-                            Protegido
+                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-200">
+                            <ShieldCheck className="w-3 h-3 text-amber-600" />
+                            Seguro
                           </span>
-                        ) : (
+                        ) : canManage ? (
                           <div className="flex items-center justify-end gap-1">
                             {/* Restablecer Contraseña */}
-                            {(userIsOwner || userIsAdmin) && (
-                              <button
-                                onClick={() => setResetUser(u)}
-                                title="Restablecer contraseña"
-                                className="p-1.5 rounded-lg text-amber-600 hover:bg-amber-50 transition-colors cursor-pointer"
-                              >
-                                <KeyRound className="w-4 h-4" />
-                              </button>
-                            )}
+                            <button
+                              onClick={() => setResetUser(u)}
+                              title="Restablecer contraseña"
+                              className="p-1.5 rounded-lg text-amber-600 hover:bg-amber-50 transition-colors cursor-pointer"
+                            >
+                              <KeyRound className="w-4 h-4" />
+                            </button>
 
                             {/* Editar */}
                             <button
@@ -339,6 +355,11 @@ export default function UsersPage() {
                               <Trash2 className="w-4 h-4" />
                             </button>
                           </div>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-purple-50 text-purple-800 border border-purple-200">
+                            <ShieldCheck className="w-3 h-3 text-purple-600" />
+                            Seguro
+                          </span>
                         )}
                       </td>
                     </tr>

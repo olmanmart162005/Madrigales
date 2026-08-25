@@ -7,7 +7,7 @@ import {
 import { useOrders, usePaymentMethods } from './hooks/useOrders'
 import OrderStatusChanger from './components/OrderStatusChanger'
 import InvoicePreviewModal from './components/InvoicePreviewModal'
-import { OrderStatusBadge } from '@/components/ui/Badge'
+import { OrderStatusBadge, PaymentStatusBadge } from '@/components/ui/Badge'
 import { TableSkeleton } from '@/components/ui/Skeleton'
 import EmptyState from '@/components/ui/EmptyState'
 import { formatDate, formatTime, formatCurrency } from '@/utils'
@@ -166,8 +166,8 @@ export default function OrdersPage() {
       </div>
 
       {/* Tabla de Pedidos */}
-      <div className="card bg-white border border-purple-100 shadow-xs overflow-hidden">
-        <div className="overflow-x-auto">
+      <div className="card bg-white border border-purple-100 shadow-sm overflow-visible">
+        <div className="overflow-x-auto min-h-[320px] pb-6">
           <table className="w-full text-left text-xs">
             <thead className="bg-purple-50/60 border-b border-purple-100 text-gray-700 font-bold uppercase tracking-wider">
               <tr>
@@ -232,25 +232,25 @@ export default function OrdersPage() {
                         {formatCurrency(order.total, currencySymbol)}
                       </td>
 
-                      {/* Saldo */}
+                      {/* Saldo y Estado de Pago */}
                       <td className="px-4 py-3.5 text-right whitespace-nowrap">
-                        {hasBalance ? (
-                          <span className="font-extrabold text-rose-600">
-                            {formatCurrency(order.balance, currencySymbol)}
-                          </span>
-                        ) : (
-                          <span className="badge bg-emerald-100 text-emerald-800 text-[10px] font-bold">
-                            Pagado
-                          </span>
-                        )}
+                        <div className="flex flex-col items-end gap-0.5">
+                          <PaymentStatusBadge amountPaid={order.amount_paid} balance={order.balance} />
+                          {hasBalance && (
+                            <span className="font-black text-[11px] text-rose-600">
+                              {formatCurrency(order.balance, currencySymbol)}
+                            </span>
+                          )}
+                        </div>
                       </td>
 
-                      {/* Estado */}
+                      {/* Estado de Entrega */}
                       <td className="px-4 py-3.5 text-center" onClick={(e) => e.stopPropagation()}>
                         <OrderStatusChanger
                           orderId={order.id}
                           orderNumber={order.order_number}
                           currentStatus={order.status}
+                          balance={order.balance}
                           onStatusChanged={refetch}
                         />
                       </td>
