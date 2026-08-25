@@ -55,29 +55,12 @@ export const useAuthStore = create((set, get) => ({
    * Inicia sesión admitiendo tanto Correo Electrónico como Nombre de Usuario
    */
   signIn: async (identifier, password) => {
-    let cleanIdentifier = identifier.trim().toLowerCase()
+    let cleanIdentifier = identifier.trim().toLowerCase().replace(/\s+/g, '')
     let loginEmail = cleanIdentifier
 
-    // Si el usuario escribió un username (sin @), buscar o resolver el correo correspondiente
+    // Si ingresó solo el nombre de usuario (ej. suricastellon), convertir a email canónico
     if (!cleanIdentifier.includes('@')) {
-      // 1. Intentar buscar en profiles por username o full_name
-      try {
-        const { data: matchedProfile } = await supabase
-          .from('profiles')
-          .select('id, username')
-          .or(`username.ilike.${cleanIdentifier},full_name.ilike.%${cleanIdentifier}%`)
-          .limit(1)
-          .maybeSingle()
-
-        if (matchedProfile) {
-          // El email estándar del sistema para ese usuario
-          loginEmail = `${matchedProfile.username || cleanIdentifier}@madrigales.com`
-        } else {
-          loginEmail = `${cleanIdentifier}@madrigales.com`
-        }
-      } catch {
-        loginEmail = `${cleanIdentifier}@madrigales.com`
-      }
+      loginEmail = `${cleanIdentifier}@madrigales.com`
     }
 
     // Autenticar en Supabase Auth
@@ -87,7 +70,6 @@ export const useAuthStore = create((set, get) => ({
     })
 
     if (error) {
-      // Si falló y no tenía @, intentar también con el correo directo ingresado
       throw error
     }
 
@@ -101,13 +83,14 @@ export const useAuthStore = create((set, get) => ({
     // Si por alguna razón no existía en profiles, crearlo como fallback
     if (!userProfile) {
       const isOlman = loginEmail === 'olmanmart16@gmail.com'
+      const usernameFromEmail = cleanIdentifier.includes('@') ? cleanIdentifier.split('@')[0] : cleanIdentifier
       const { data: newProf } = await supabase
         .from('profiles')
         .upsert({
           id: data.user.id,
-          full_name: data.user.user_metadata?.full_name || (isOlman ? 'Olman Martínez' : cleanIdentifier),
-          username: cleanIdentifier,
-          role: 'administrador',
+          full_name: data.user.user_metadata?.full_name || (isOlman ? 'Olman Martínez' : usernameFromEmail),
+          username: usernameFromEmail,
+          role: data.user.user_metadata?.role || (isOlman ? 'administrador' : 'cajero'),
           is_owner: isOlman,
           is_active: true,
         })
