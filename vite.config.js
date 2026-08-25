@@ -8,45 +8,67 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['LOGO_OFICIAL.png', 'robots.txt'],
+      includeAssets: [
+        'icons/pwa-192x192.png',
+        'icons/pwa-512x512.png',
+        'icons/maskable-icon-512x512.png',
+        'icons/apple-touch-icon.png',
+        'LOGO_OFICIAL_BLANCO.png',
+        'LOGO_OFICIAL.png',
+        'favicon.png',
+        'favicon.svg',
+        'robots.txt'
+      ],
       manifest: {
         name: 'Madrigales Pastelería',
         short_name: 'Madrigales',
-        description: 'Sistema de gestión y punto de venta para Madrigales Pastelería',
-        theme_color: '#2C1536',
-        background_color: '#FAF7F9',
+        description: 'Sistema de gestión para Madrigales Pastelería',
+        theme_color: '#7C3AED',
+        background_color: '#FFFFFF',
         display: 'standalone',
         orientation: 'any',
         start_url: '/',
+        scope: '/',
         icons: [
           {
-            src: '/LOGO_OFICIAL.png',
+            src: '/icons/pwa-192x192.png',
             sizes: '192x192',
-            type: 'image/png'
+            type: 'image/png',
+            purpose: 'any'
           },
           {
-            src: '/LOGO_OFICIAL.png',
-            sizes: '512x512',
-            type: 'image/png'
-          },
-          {
-            src: '/LOGO_OFICIAL.png',
+            src: '/icons/pwa-512x512.png',
             sizes: '512x512',
             type: 'image/png',
-            purpose: 'any maskable'
+            purpose: 'any'
+          },
+          {
+            src: '/icons/maskable-icon-192x192.png',
+            sizes: '192x192',
+            type: 'image/png',
+            purpose: 'maskable'
+          },
+          {
+            src: '/icons/maskable-icon-512x512.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'maskable'
           }
         ]
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
+        cleanupOutdatedCaches: true,
+        clientsClaim: true,
+        skipWaiting: true,
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/olmzeebxhpvettrrtbet\.supabase\.co\/.*/i,
             handler: 'NetworkFirst',
             options: {
-              cacheName: 'supabase-cache',
+              cacheName: 'supabase-cache-v2',
               expiration: {
-                maxEntries: 50,
+                maxEntries: 100,
                 maxAgeSeconds: 60 * 60 * 24
               }
             }
@@ -55,32 +77,13 @@ export default defineConfig({
       }
     })
   ],
-  optimizeDeps: {
-    include: [
-      'react',
-      'react-dom',
-      'react-router-dom',
-      '@supabase/supabase-js',
-      'lucide-react',
-      'recharts',
-      'zustand',
-      'react-hot-toast',
-      'zod',
-      'react-hook-form',
-      '@hookform/resolvers/zod',
-      'date-fns',
-      'date-fns/locale',
-      'jspdf',
-      'jspdf-autotable',
-    ],
-  },
   resolve: {
     alias: {
-      '@': path.resolve(import.meta.dirname || __dirname, './src'),
-    },
+      '@': path.resolve(import.meta.dirname, './src')
+    }
   },
   server: {
     port: 3000,
-    open: true,
-  },
+    host: true
+  }
 })

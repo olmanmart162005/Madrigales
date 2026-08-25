@@ -80,9 +80,9 @@ export default function Sidebar({ mobileOpen, onMobileClose }) {
       <aside className="hidden lg:flex flex-col fixed left-0 top-0 h-screen w-[260px] bg-white border-r border-gray-100/90 shadow-sm z-30 select-none">
         {/* Branding Superior */}
         <div className="p-4 sm:p-5 border-b border-gray-100/90 flex items-center gap-3.5">
-          <div className="w-11 h-11 rounded-2xl bg-white border border-purple-100 shadow-sm p-1.5 flex items-center justify-center flex-shrink-0">
+          <div className="w-11 h-11 rounded-2xl bg-white border border-purple-100 shadow-sm p-1 flex items-center justify-center flex-shrink-0 overflow-hidden">
             <img
-              src="/LOGO_OFICIAL.png"
+              src="/icons/pwa-192x192.png"
               alt="Madrigales"
               className="w-full h-full object-contain"
               onError={(e) => { e.target.style.display = 'none' }}
@@ -253,8 +253,8 @@ export default function Sidebar({ mobileOpen, onMobileClose }) {
         {/* Encabezado del Drawer Móvil */}
         <div className="p-4 border-b border-gray-100 flex items-center justify-between bg-white">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-white border border-purple-100 p-1.5 shadow-sm flex items-center justify-center flex-shrink-0">
-              <img src="/LOGO_OFICIAL.png" alt="Madrigales" className="w-full h-full object-contain" />
+            <div className="w-10 h-10 rounded-2xl bg-white border border-purple-100 p-1 shadow-sm flex items-center justify-center flex-shrink-0 overflow-hidden">
+              <img src="/icons/pwa-192x192.png" alt="Madrigales" className="w-full h-full object-contain" />
             </div>
             <div>
               <h2 className="text-base font-extrabold text-gray-900 tracking-tight leading-tight">

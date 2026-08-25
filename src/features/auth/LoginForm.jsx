@@ -55,11 +55,11 @@ export default function LoginForm() {
         <div className="space-y-3 text-center">
           {/* Logo Oficial Grande y Nítido */}
           <div className="flex justify-center">
-            <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-3xl bg-white/95 p-3 border border-white/20 shadow-2xl flex items-center justify-center backdrop-blur-md">
+            <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-3xl bg-white p-3 border border-purple-100 shadow-2xl flex items-center justify-center overflow-hidden">
               <img
-                src="/LOGO_OFICIAL.png"
+                src="/icons/pwa-512x512.png"
                 alt="Madrigales Pastelería"
-                className="w-full h-full object-contain filter drop-shadow-sm"
+                className="w-full h-full object-contain"
               />
             </div>
           </div>
