@@ -31,16 +31,7 @@ export default function SplashScreen({ onComplete }) {
         isExiting ? 'opacity-0 scale-105 pointer-events-none' : 'opacity-100 scale-100'
       }`}
     >
-      {/* Halo de luz suave ambiental */}
-      <div
-        className="absolute w-96 h-96 sm:w-[500px] sm:h-[500px] rounded-full pointer-events-none"
-        style={{
-          background: 'radial-gradient(circle, rgba(124, 58, 237, 0.06) 0%, rgba(192, 38, 211, 0.03) 50%, transparent 75%)',
-          filter: 'blur(60px)',
-        }}
-      />
-
-      {/* Contenedor Central con Logo Oficial */}
+      {/* Contenedor Central con Logo Oficial Totalmente Integrado */}
       <div
         className="relative z-10 flex flex-col items-center text-center px-6 max-w-md w-full transform transition-all duration-700 ease-out"
         style={{
@@ -48,7 +39,7 @@ export default function SplashScreen({ onComplete }) {
           opacity: isLoaded ? 1 : 0,
         }}
       >
-        {/* LOGO OFICIAL ORIGINAL DE MADRIGALES */}
+        {/* LOGO OFICIAL ORIGINAL DE MADRIGALES INTEGRADO */}
         <div className="w-56 h-56 sm:w-64 sm:h-64 flex items-center justify-center mb-6">
           <img
             src="/LOGO_OFICIAL_BLANCO.png"

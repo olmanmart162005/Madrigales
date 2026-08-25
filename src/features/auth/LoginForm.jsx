@@ -49,14 +49,14 @@ export default function LoginForm() {
   return (
     <div className="w-full lg:w-1/2 p-6 sm:p-10 md:p-12 flex flex-col justify-center bg-[#0D1420] text-white">
       <div className="max-w-md w-full mx-auto space-y-6">
-        {/* Encabezado con Logo Oficial */}
-        <div className="space-y-2 text-center">
-          <div className="flex justify-center mb-2">
-            <div className="w-24 h-24 sm:w-28 sm:h-28 flex items-center justify-center">
+        {/* Encabezado con Logo Oficial con Fondo Blanco Elegante */}
+        <div className="space-y-3 text-center">
+          <div className="flex justify-center">
+            <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-3xl bg-white p-2.5 shadow-2xl border border-white/20 flex items-center justify-center">
               <img
-                src="/LOGO_OFICIAL.png"
+                src="/LOGO_OFICIAL_BLANCO.png"
                 alt="Madrigales Pastelería"
-                className="w-full h-full object-contain filter drop-shadow-md"
+                className="w-full h-full object-contain"
               />
             </div>
           </div>
