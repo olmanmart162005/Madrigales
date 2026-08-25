@@ -1,0 +1,88 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+  
+  html {
+    font-family: 'Inter', system-ui, sans-serif;
+    -webkit-tap-highlight-color: transparent;
+    overflow-x: hidden;
+    width: 100%;
+  }
+
+  body {
+    @apply bg-[#FAF7F9] text-gray-900 antialiased;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+    width: 100%;
+    min-height: 100vh;
+  }
+
+  #root {
+    width: 100%;
+    overflow-x: hidden;
+  }
+
+  :root {
+    --sidebar-width: 250px;
+    --sidebar-collapsed-width: 76px;
+    --header-height: 64px;
+  }
+}
+
+@layer components {
+  /* Scrollbar personalizada */
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: #c4b5fd #f5f3ff;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-track {
+    @apply bg-purple-50;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    @apply bg-purple-300 rounded-full;
+  }
+
+  /* Card base */
+  .card {
+    @apply bg-white rounded-2xl border border-purple-100/80 shadow-sm transition-shadow;
+  }
+  
+  .card-hover {
+    @apply hover:shadow-md hover:border-purple-200 transition-all duration-200;
+  }
+
+  /* Botones estándar */
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 font-semibold transition-all duration-150 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer;
+  }
+  
+  .btn-primary {
+    @apply btn bg-gradient-to-r from-purple-700 to-fuchsia-600 hover:from-purple-800 hover:to-fuchsia-700 text-white shadow-sm hover:shadow-md px-4 py-2.5 rounded-xl text-sm font-bold;
+  }
+  
+  .btn-secondary {
+    @apply btn bg-white hover:bg-purple-50 text-gray-700 border border-gray-200 hover:border-purple-300 px-4 py-2.5 rounded-xl text-sm font-semibold;
+  }
+
+  /* Inputs de formulario */
+  .input {
+    @apply w-full px-3.5 py-2.5 bg-white border border-gray-200 rounded-xl text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-100 transition-all;
+  }
+
+  .label {
+    @apply block text-xs font-bold text-gray-700 mb-1.5 uppercase tracking-wider;
+  }
+}
