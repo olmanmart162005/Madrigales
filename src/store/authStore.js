@@ -145,4 +145,9 @@ export const useAuthStore = create((set, get) => ({
     const { profile } = get()
     return profile?.is_owner === true
   },
+
+  isActive: () => {
+    const { profile } = get()
+    return profile?.is_active !== false
+  },
 }))

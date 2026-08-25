@@ -23,7 +23,9 @@ function ProtectedRoute({ children, adminOnly = false, ownerOnly = false }) {
 
   if (loading) return <PageLoader />
   if (!user) return <Navigate to="/login" replace />
-  if (!isActive()) return <Navigate to="/login" replace />
+  
+  const active = typeof isActive === 'function' ? isActive() : profile?.is_active !== false
+  if (!active) return <Navigate to="/login" replace />
 
   // Verificación de solo Owner
   if (ownerOnly && !isOwner()) {
@@ -39,9 +41,11 @@ function ProtectedRoute({ children, adminOnly = false, ownerOnly = false }) {
 }
 
 function PublicRoute({ children }) {
-  const { user, loading, isActive } = useAuthStore()
+  const { user, profile, loading, isActive } = useAuthStore()
   if (loading) return <PageLoader />
-  if (user && isActive()) return <Navigate to="/" replace />
+  
+  const active = typeof isActive === 'function' ? isActive() : profile?.is_active !== false
+  if (user && active) return <Navigate to="/" replace />
   return children
 }
 
