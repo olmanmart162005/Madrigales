@@ -96,7 +96,7 @@ export default function Header({ onToggleSidebar }) {
         {/* Branding móvil */}
         <div className="flex items-center gap-2 lg:hidden">
           <div className="w-8 h-8 rounded-lg bg-white border border-purple-100 p-0.5 shadow-xs flex items-center justify-center overflow-hidden">
-            <img src="/icons/pwa-192x192.png" alt="Madrigales" className="w-full h-full object-contain" />
+            <img src="/LOGO_OFICIAL_BLANCO.png" alt="Madrigales" className="w-full h-full object-contain" />
           </div>
           <div>
             <span className="text-sm font-extrabold text-gray-900 leading-tight block">

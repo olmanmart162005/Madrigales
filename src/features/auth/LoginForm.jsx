@@ -49,25 +49,24 @@ export default function LoginForm() {
   return (
     <div className="w-full lg:w-1/2 p-6 sm:p-10 md:p-12 flex flex-col justify-center bg-[#0D1420] text-white">
       <div className="max-w-md w-full mx-auto space-y-6">
-        {/* Encabezado con Logo Grande Luminoso */}
-        <div className="space-y-3 text-center">
-          {/* Logo Oficial Grande y Nítido */}
-          <div className="flex justify-center">
-            <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-3xl bg-white p-3 border border-purple-100 shadow-2xl flex items-center justify-center overflow-hidden">
+        {/* Encabezado con Logo Oficial */}
+        <div className="space-y-2 text-center">
+          <div className="flex justify-center mb-2">
+            <div className="w-24 h-24 sm:w-28 sm:h-28 flex items-center justify-center">
               <img
-                src="/icons/pwa-512x512.png"
+                src="/LOGO_OFICIAL.png"
                 alt="Madrigales Pastelería"
-                className="w-full h-full object-contain"
+                className="w-full h-full object-contain filter drop-shadow-md"
               />
             </div>
           </div>
 
           <div>
             <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white font-sans">
-              Madrigales
+              Iniciar Sesión
             </h2>
             <p className="text-xs font-bold text-fuchsia-400 uppercase tracking-[0.25em] mt-1">
-              PASTELERÍA &middot; INICIAR SESIÓN
+              SISTEMA DE GESTIÓN & POS
             </p>
           </div>
         </div>

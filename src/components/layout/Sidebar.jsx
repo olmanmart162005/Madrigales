@@ -82,10 +82,9 @@ export default function Sidebar({ mobileOpen, onMobileClose }) {
         <div className="p-4 sm:p-5 border-b border-gray-100/90 flex items-center gap-3.5">
           <div className="w-11 h-11 rounded-2xl bg-white border border-purple-100 shadow-sm p-1 flex items-center justify-center flex-shrink-0 overflow-hidden">
             <img
-              src="/icons/pwa-192x192.png"
+              src="/LOGO_OFICIAL_BLANCO.png"
               alt="Madrigales"
               className="w-full h-full object-contain"
-              onError={(e) => { e.target.style.display = 'none' }}
             />
           </div>
 

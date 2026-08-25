@@ -12,7 +12,7 @@ export default function BrandPanel() {
       <div className="relative z-10 flex items-center gap-3.5">
         <div className="w-12 h-12 rounded-2xl bg-white/95 p-2 border border-white/20 shadow-md flex items-center justify-center">
           <img
-            src="/icons/pwa-512x512.png"
+            src="/LOGO_OFICIAL.png"
             alt="Madrigales Pastelería"
             className="w-full h-full object-contain"
           />
@@ -30,11 +30,11 @@ export default function BrandPanel() {
       {/* Centro: Panel de Presentación Profesional con el Logo Oficial */}
       <div className="relative z-10 my-auto py-6 space-y-6">
         <div className="flex flex-col items-center text-center space-y-3">
-          <div className="w-32 h-32 rounded-3xl bg-white border border-white/20 p-3 shadow-2xl flex items-center justify-center overflow-hidden">
+          <div className="w-32 h-32 rounded-3xl bg-white/95 border border-white/20 p-3 shadow-2xl flex items-center justify-center">
             <img
-              src="/icons/pwa-512x512.png"
+              src="/LOGO_OFICIAL.png"
               alt="Madrigales Pastelería"
-              className="w-full h-full object-contain"
+              className="w-full h-full object-contain filter drop-shadow-sm"
             />
           </div>
           <div>

@@ -5,7 +5,7 @@ export default function SplashScreen({ onComplete }) {
   const [isExiting, setIsExiting] = useState(false)
 
   useEffect(() => {
-    // 1. Aparición suave y elegante
+    // 1. Entrada suave
     const loadTimer = setTimeout(() => {
       setIsLoaded(true)
     }, 100)
@@ -31,46 +31,34 @@ export default function SplashScreen({ onComplete }) {
         isExiting ? 'opacity-0 scale-105 pointer-events-none' : 'opacity-100 scale-100'
       }`}
     >
-      {/* Halo de luz suave morada/lila en el fondo blanco */}
+      {/* Halo de luz suave ambiental */}
       <div
-        className="absolute w-96 h-96 sm:w-[450px] sm:h-[450px] rounded-full pointer-events-none"
+        className="absolute w-96 h-96 sm:w-[500px] sm:h-[500px] rounded-full pointer-events-none"
         style={{
-          background: 'radial-gradient(circle, rgba(124, 58, 237, 0.08) 0%, rgba(192, 38, 211, 0.04) 50%, transparent 75%)',
-          filter: 'blur(50px)',
+          background: 'radial-gradient(circle, rgba(124, 58, 237, 0.06) 0%, rgba(192, 38, 211, 0.03) 50%, transparent 75%)',
+          filter: 'blur(60px)',
         }}
       />
 
-      {/* Contenedor Central */}
+      {/* Contenedor Central con Logo Oficial */}
       <div
-        className="relative z-10 flex flex-col items-center text-center px-6 max-w-sm w-full transform transition-all duration-700 ease-out"
+        className="relative z-10 flex flex-col items-center text-center px-6 max-w-md w-full transform transition-all duration-700 ease-out"
         style={{
           transform: isLoaded ? 'scale(1) translateY(0)' : 'scale(0.92) translateY(12px)',
           opacity: isLoaded ? 1 : 0,
         }}
       >
-        {/* Isotipo Oficial del Tulipán de Madrigales */}
-        <div className="relative mb-4">
-          <div className="w-28 h-28 sm:w-36 sm:h-36 rounded-3xl bg-white p-3 flex items-center justify-center shadow-lg shadow-purple-100/80 border border-purple-100/60">
-            <img
-              src="/icons/pwa-512x512.png"
-              alt="Madrigales"
-              className="w-full h-full object-contain"
-            />
-          </div>
+        {/* LOGO OFICIAL ORIGINAL DE MADRIGALES */}
+        <div className="w-56 h-56 sm:w-64 sm:h-64 flex items-center justify-center mb-6">
+          <img
+            src="/LOGO_OFICIAL_BLANCO.png"
+            alt="Madrigales Pastelería"
+            className="w-full h-full object-contain"
+          />
         </div>
 
-        {/* Nombre Principal */}
-        <h1 className="text-3xl sm:text-4xl font-black text-gray-900 tracking-tight leading-tight">
-          Madrigales
-        </h1>
-
-        {/* Subtítulo Institucional */}
-        <p className="text-xs sm:text-sm font-extrabold tracking-[0.35em] text-purple-700 uppercase mt-1">
-          PASTELERÍA
-        </p>
-
-        {/* Indicador de Carga Minimalista y Elegante */}
-        <div className="mt-8 flex items-center gap-1.5">
+        {/* Indicador de Carga Minimalista */}
+        <div className="flex items-center gap-2">
           <span className="w-2 h-2 rounded-full bg-purple-600 animate-bounce" style={{ animationDelay: '0ms' }} />
           <span className="w-2 h-2 rounded-full bg-fuchsia-600 animate-bounce" style={{ animationDelay: '150ms' }} />
           <span className="w-2 h-2 rounded-full bg-purple-400 animate-bounce" style={{ animationDelay: '300ms' }} />
