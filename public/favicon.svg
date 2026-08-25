@@ -1,76 +1,62 @@
 
-<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
-  <defs>
-    <!-- Fondo blanco puro -->
-    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#FFFFFF" />
-      <stop offset="100%" stop-color="#FFFFFF" />
-    </linearGradient>
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <!-- Fondo blanco puro -->
+  <rect width="512" height="512" fill="#FFFFFF" />
 
-    <!-- Degradado del Pétalo Central -->
-    <linearGradient id="centerPetal" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" stop-color="#D8B4FE" />
-      <stop offset="50%" stop-color="#A855F7" />
-      <stop offset="100%" stop-color="#7E22CE" />
-    </linearGradient>
+  <g transform="translate(0, 8)">
+    <!-- 1. Isotipo del Tulipán Morado Oficial -->
+    <g transform="translate(176, 50) scale(0.62)">
+      <!-- Pétalo Central con degradado -->
+      <defs>
+        <linearGradient id="centerTulip" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="#D8B4FE" />
+          <stop offset="40%" stop-color="#A855F7" />
+          <stop offset="100%" stop-color="#7E22CE" />
+        </linearGradient>
+        <linearGradient id="sideTulip" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#C084FC" />
+          <stop offset="100%" stop-color="#6B21A8" />
+        </linearGradient>
+        <linearGradient id="tulipBase" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="#4C1D95" />
+          <stop offset="100%" stop-color="#2E1065" />
+        </linearGradient>
+      </defs>
 
-    <!-- Degradado del Pétalo Izquierdo -->
-    <linearGradient id="leftPetal" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#C084FC" />
-      <stop offset="100%" stop-color="#6B21A8" />
-    </linearGradient>
+      <!-- Pétalo Centro -->
+      <path d="M128 30 C110 65, 100 120, 128 185 C156 120, 146 65, 128 30 Z" fill="url(#centerTulip)" />
+      <!-- Pétalo Izquierdo -->
+      <path d="M123 60 C85 70, 45 110, 55 165 C65 205, 110 210, 128 210 C115 180, 112 130, 123 60 Z" fill="url(#sideTulip)" />
+      <!-- Pétalo Derecho -->
+      <path d="M133 60 C171 70, 211 110, 201 165 C191 205, 146 210, 128 210 C141 180, 144 130, 133 60 Z" fill="url(#sideTulip)" />
+      <!-- Base Copa del Tulipán -->
+      <path d="M55 165 C70 235, 186 235, 201 165 C208 200, 170 242, 128 242 C86 242, 48 200, 55 165 Z" fill="url(#tulipBase)" stroke="#FFFFFF" stroke-width="2" />
+      <circle cx="128" cy="95" r="7" fill="#FAF5FF" opacity="0.9" />
+    </g>
 
-    <!-- Degradado del Pétalo Derecho -->
-    <linearGradient id="rightPetal" x1="100%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" stop-color="#C084FC" />
-      <stop offset="100%" stop-color="#6B21A8" />
-    </linearGradient>
+    <!-- 2. Tipografía "Madrigales" en Negro Elegante (Serif de Pastelería Fina) -->
+    <text 
+      x="256" 
+      y="320" 
+      font-family="'Playfair Display', Georgia, 'Times New Roman', serif" 
+      font-size="64" 
+      font-weight="900" 
+      fill="#0F172A" 
+      text-anchor="middle"
+      letter-spacing="-0.5"
+    >Madrigales</text>
 
-    <!-- Sombra sutil y elegante del emblema -->
-    <filter id="softShadow" x="-10%" y="-10%" width="130%" height="130%">
-      <feDropShadow dx="0" dy="0.96" stdDeviation="1.28" flood-color="#7C3AED" flood-opacity="0.18" />
-    </filter>
-
-    <!-- Degradado de la Base / Copa del Tulipán -->
-    <linearGradient id="baseGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" stop-color="#581C87" />
-      <stop offset="100%" stop-color="#3B0764" />
-    </linearGradient>
-  </defs>
-
-  <!-- 1. Fondo Blanco Impecable -->
-  <rect width="64" height="64" fill="url(#bgGrad)" />
-
-  <!-- 2. Grupo del Isotipo Centrado -->
-  <g transform="translate(5.12, 5.12) scale(0.105)" filter="url(#softShadow)">
-    
-    <!-- Pétalo Central (Tulipán / Corona de Pastelería) -->
-    <path 
-      d="M256 64 C220 130, 200 220, 256 340 C312 220, 292 130, 256 64 Z" 
-      fill="url(#centerPetal)" 
-    />
-
-    <!-- Pétalo Izquierdo -->
-    <path 
-      d="M246 120 C180 140, 100 210, 120 310 C140 380, 220 390, 256 390 C235 340, 230 250, 246 120 Z" 
-      fill="url(#leftPetal)" 
-    />
-
-    <!-- Pétalo Derecho -->
-    <path 
-      d="M266 120 C332 140, 412 210, 392 310 C372 380, 292 390, 256 390 C277 340, 282 250, 266 120 Z" 
-      fill="url(#rightPetal)" 
-    />
-
-    <!-- Cáliz / Base Envolvente del Tulipán (Borde elegante) -->
-    <path 
-      d="M120 310 C145 420, 367 420, 392 310 C405 375, 335 448, 256 448 C177 448, 107 375, 120 310 Z" 
-      fill="url(#baseGrad)" 
-    />
-
-    <!-- Núcleo de Destello / Luz Superior -->
-    <circle cx="256" cy="180" r="14" fill="#FAF5FF" opacity="0.9" />
-    <path d="M256 150 L256 210 M226 180 L286 180" stroke="#FAF5FF" stroke-width="4" stroke-linecap="round" opacity="0.8" />
+    <!-- 3. Subtítulo "Pastelería y Repostería" en Fucsia/Magenta -->
+    <text 
+      x="256" 
+      y="360" 
+      font-family="system-ui, -apple-system, sans-serif" 
+      font-size="19" 
+      font-weight="800" 
+      fill="#C026D3" 
+      text-anchor="middle"
+      letter-spacing="2.5"
+    >Pastelería y Repostería</text>
   </g>
 </svg>
   
