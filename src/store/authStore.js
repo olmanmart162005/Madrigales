@@ -20,7 +20,7 @@ export const useAuthStore = create((set, get) => ({
         const prof = await get().fetchProfile(session.user.id)
         if (prof && prof.is_active === false) {
           await get().signOut()
-          throw new Error('Tu cuenta se encuentra desactivada. Comunícate con un administrador.')
+          throw new Error('Tu cuenta se encuentra desactivada. Contacta al administrador.')
         }
       }
     } catch (error) {
@@ -51,13 +51,45 @@ export const useAuthStore = create((set, get) => ({
     }
   },
 
-  signIn: async (email, password) => {
-    const cleanEmail = email.trim().toLowerCase()
+  /**
+   * Inicia sesión admitiendo tanto Correo Electrónico como Nombre de Usuario
+   */
+  signIn: async (identifier, password) => {
+    let cleanIdentifier = identifier.trim().toLowerCase()
+    let loginEmail = cleanIdentifier
+
+    // Si el usuario escribió un username (sin @), buscar o resolver el correo correspondiente
+    if (!cleanIdentifier.includes('@')) {
+      // 1. Intentar buscar en profiles por username o full_name
+      try {
+        const { data: matchedProfile } = await supabase
+          .from('profiles')
+          .select('id, username')
+          .or(`username.ilike.${cleanIdentifier},full_name.ilike.%${cleanIdentifier}%`)
+          .limit(1)
+          .maybeSingle()
+
+        if (matchedProfile) {
+          // El email estándar del sistema para ese usuario
+          loginEmail = `${matchedProfile.username || cleanIdentifier}@madrigales.com`
+        } else {
+          loginEmail = `${cleanIdentifier}@madrigales.com`
+        }
+      } catch {
+        loginEmail = `${cleanIdentifier}@madrigales.com`
+      }
+    }
+
+    // Autenticar en Supabase Auth
     const { data, error } = await supabase.auth.signInWithPassword({
-      email: cleanEmail,
+      email: loginEmail,
       password,
     })
-    if (error) throw error
+
+    if (error) {
+      // Si falló y no tenía @, intentar también con el correo directo ingresado
+      throw error
+    }
 
     // Obtener perfil asociado
     let { data: userProfile } = await supabase
@@ -68,12 +100,13 @@ export const useAuthStore = create((set, get) => ({
 
     // Si por alguna razón no existía en profiles, crearlo como fallback
     if (!userProfile) {
-      const isOlman = cleanEmail === 'olmanmart16@gmail.com'
+      const isOlman = loginEmail === 'olmanmart16@gmail.com'
       const { data: newProf } = await supabase
         .from('profiles')
         .upsert({
           id: data.user.id,
-          full_name: data.user.user_metadata?.full_name || (isOlman ? 'Olman Martínez' : cleanEmail.split('@')[0]),
+          full_name: data.user.user_metadata?.full_name || (isOlman ? 'Olman Martínez' : cleanIdentifier),
+          username: cleanIdentifier,
           role: 'administrador',
           is_owner: isOlman,
           is_active: true,
@@ -84,9 +117,10 @@ export const useAuthStore = create((set, get) => ({
       userProfile = newProf
     }
 
+    // Verificar si la cuenta está activa
     if (userProfile && userProfile.is_active === false) {
       await supabase.auth.signOut()
-      throw new Error('Tu cuenta se encuentra desactivada. Comunícate con un administrador.')
+      throw new Error('Tu cuenta se encuentra desactivada. Contacta al administrador.')
     }
 
     set({ session: data.session, user: data.user, profile: userProfile })
@@ -98,37 +132,8 @@ export const useAuthStore = create((set, get) => ({
       await supabase.auth.signOut()
     } catch {
       // Ignore
-    } finally {
-      set({ user: null, profile: null, session: null })
     }
-  },
-
-  updateProfile: async (updates) => {
-    const { user } = get()
-    if (!user) throw new Error('No hay usuario autenticado')
-
-    const sanitizedUpdates = { ...updates }
-    delete sanitizedUpdates.is_owner
-    if (!get().isOwner()) {
-      delete sanitizedUpdates.role
-      delete sanitizedUpdates.is_active
-    }
-
-    const { data, error } = await supabase
-      .from('profiles')
-      .update(sanitizedUpdates)
-      .eq('id', user.id)
-      .select()
-      .single()
-
-    if (error) throw error
-    set({ profile: data })
-    return data
-  },
-
-  isOwner: () => {
-    const { profile } = get()
-    return profile?.is_owner === true
+    set({ user: null, profile: null, session: null })
   },
 
   isAdmin: () => {
@@ -136,13 +141,8 @@ export const useAuthStore = create((set, get) => ({
     return profile?.role === 'administrador' || profile?.is_owner === true
   },
 
-  isCajero: () => {
+  isOwner: () => {
     const { profile } = get()
-    return profile?.role === 'cajero' || profile?.role === 'empleado'
-  },
-
-  isActive: () => {
-    const { profile } = get()
-    return profile?.is_active !== false
+    return profile?.is_owner === true
   },
 }))

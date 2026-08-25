@@ -2,21 +2,18 @@ import React, { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { Mail, Lock, Eye, EyeOff, ArrowRight, HelpCircle, Loader2 } from 'lucide-react'
+import { User, Lock, Eye, EyeOff, ArrowRight, Loader2 } from 'lucide-react'
 import { useAuthStore } from '@/store/authStore'
-import Modal from '@/components/ui/Modal'
 import toast from 'react-hot-toast'
 
 const loginSchema = z.object({
-  email: z.string().min(1, 'El correo electrónico es requerido').email('Ingresa un correo electrónico válido'),
+  identifier: z.string().min(1, 'Ingresa tu usuario o correo electrónico'),
   password: z.string().min(1, 'La contraseña es requerida'),
 })
 
 export default function LoginForm() {
   const [showPassword, setShowPassword] = useState(false)
-  const [rememberMe, setRememberMe] = useState(true)
   const [submitting, setSubmitting] = useState(false)
-  const [isForgotModalOpen, setIsForgotModalOpen] = useState(false)
 
   const { signIn } = useAuthStore()
 
@@ -27,7 +24,7 @@ export default function LoginForm() {
   } = useForm({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      email: '',
+      identifier: '',
       password: '',
     },
   })
@@ -35,14 +32,15 @@ export default function LoginForm() {
   const onSubmit = async (values) => {
     try {
       setSubmitting(true)
-      await signIn(values.email, values.password)
+      await signIn(values.identifier, values.password)
       toast.success('¡Bienvenido a Madrigales Pastelería!')
     } catch (err) {
       console.error('Login error:', err)
-      const errorMsg = err.message?.toLowerCase().includes('invalid login credentials')
-        ? 'Correo o contraseña incorrectos. Verifica tus datos.'
-        : err.message || 'Error al iniciar sesión'
-      toast.error(errorMsg)
+      if (err.message?.includes('desactivada')) {
+        toast.error('Tu cuenta se encuentra desactivada. Contacta al administrador.')
+      } else {
+        toast.error('Usuario o contraseña incorrectos.')
+      }
     } finally {
       setSubmitting(false)
     }
@@ -65,142 +63,90 @@ export default function LoginForm() {
           </div>
 
           <div>
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
-              Iniciar Sesión
+            <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white font-sans">
+              Madrigales
             </h2>
-            <p className="text-xs sm:text-sm text-slate-400 mt-1">
-              Ingresa tus credenciales para acceder al sistema
+            <p className="text-xs font-bold text-fuchsia-400 uppercase tracking-[0.25em] mt-1">
+              PASTELERÍA &middot; INICIAR SESIÓN
             </p>
           </div>
         </div>
 
         {/* Formulario */}
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 pt-1">
-          {/* Campo Correo Electrónico */}
-          <div className="space-y-1.5">
-            <label className="block text-xs font-semibold text-slate-200 text-left">
-              Correo Electrónico
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          {/* Usuario o Correo */}
+          <div className="space-y-1">
+            <label className="block text-xs font-semibold text-slate-300">
+              Usuario o Correo Electrónico
             </label>
-            <div className="relative group">
-              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 group-focus-within:text-pink-400 transition-colors">
-                <Mail className="w-4 h-4" />
-              </div>
+            <div className="relative">
+              <User className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
               <input
-                {...register('email')}
-                type="email"
-                placeholder="usuario@madrigales.com"
-                autoComplete="email"
-                disabled={submitting}
-                className="w-full pl-10 pr-4 py-3 bg-[#162032] border border-slate-700/80 rounded-xl text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:border-pink-500 focus:ring-2 focus:ring-pink-500/20 transition-all"
+                {...register('identifier')}
+                type="text"
+                autoComplete="username"
+                placeholder="Ej. suri, yimi o correo..."
+                className="w-full pl-10 pr-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
               />
             </div>
-            {errors.email && (
-              <p className="text-[11px] text-rose-400 font-medium pl-1 text-left">
-                {errors.email.message}
-              </p>
+            {errors.identifier && (
+              <p className="text-xs text-rose-400 mt-1">{errors.identifier.message}</p>
             )}
           </div>
 
-          {/* Campo Contraseña */}
-          <div className="space-y-1.5">
-            <div className="flex items-center justify-between">
-              <label className="block text-xs font-semibold text-slate-200">
-                Contraseña
-              </label>
-              <button
-                type="button"
-                onClick={() => setIsForgotModalOpen(true)}
-                className="text-[11px] text-pink-400 hover:text-pink-300 transition-colors cursor-pointer"
-              >
-                ¿Olvidaste tu contraseña?
-              </button>
-            </div>
-            <div className="relative group">
-              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 group-focus-within:text-pink-400 transition-colors">
-                <Lock className="w-4 h-4" />
-              </div>
+          {/* Contraseña */}
+          <div className="space-y-1">
+            <label className="block text-xs font-semibold text-slate-300">
+              Contraseña
+            </label>
+            <div className="relative">
+              <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
               <input
                 {...register('password')}
                 type={showPassword ? 'text' : 'password'}
-                placeholder="••••••••••••"
                 autoComplete="current-password"
-                disabled={submitting}
-                className="w-full pl-10 pr-11 py-3 bg-[#162032] border border-slate-700/80 rounded-xl text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:border-pink-500 focus:ring-2 focus:ring-pink-500/20 transition-all"
+                placeholder="••••••••"
+                className="w-full pl-10 pr-10 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-200 transition-colors cursor-pointer"
+                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors cursor-pointer"
+                title={showPassword ? 'Ocultar contraseña' : 'Ver contraseña'}
               >
                 {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
             </div>
             {errors.password && (
-              <p className="text-[11px] text-rose-400 font-medium pl-1 text-left">
-                {errors.password.message}
-              </p>
+              <p className="text-xs text-rose-400 mt-1">{errors.password.message}</p>
             )}
           </div>
 
-          {/* Recordar sesión */}
-          <div className="flex items-center justify-between pt-1">
-            <label className="flex items-center gap-2 cursor-pointer select-none">
-              <input
-                type="checkbox"
-                checked={rememberMe}
-                onChange={(e) => setRememberMe(e.target.checked)}
-                className="w-4 h-4 rounded-sm bg-[#162032] border-slate-700 text-pink-600 focus:ring-pink-500/30"
-              />
-              <span className="text-xs text-slate-300">Mantener sesión activa</span>
-            </label>
-          </div>
-
-          {/* Botón Submit */}
+          {/* Botón de Entrada */}
           <button
             type="submit"
             disabled={submitting}
-            className="w-full mt-2 py-3 px-4 rounded-xl font-bold text-xs sm:text-sm text-white bg-gradient-to-r from-pink-600 via-purple-600 to-pink-600 hover:from-pink-500 hover:to-purple-500 active:scale-[0.99] shadow-lg shadow-pink-600/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+            className="w-full py-3.5 px-4 bg-gradient-to-r from-purple-600 via-purple-700 to-fuchsia-600 hover:from-purple-500 hover:to-fuchsia-500 text-white font-bold rounded-xl text-sm shadow-lg shadow-purple-600/30 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed group mt-2"
           >
             {submitting ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin" />
-                <span>Verificando credenciales...</span>
+                <span>Iniciando sesión...</span>
               </>
             ) : (
               <>
-                <span>Ingresar al Sistema</span>
-                <ArrowRight className="w-4 h-4" />
+                <span>Acceder al Sistema</span>
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </>
             )}
           </button>
         </form>
 
-        {/* Modal de Recuperación */}
-        {isForgotModalOpen && (
-          <Modal
-            isOpen={isForgotModalOpen}
-            onClose={() => setIsForgotModalOpen(false)}
-            title="Recuperación de Contraseña"
-            size="sm"
-          >
-            <div className="p-6 space-y-4 text-center text-gray-800">
-              <div className="w-12 h-12 rounded-full bg-pink-50 text-pink-600 mx-auto flex items-center justify-center">
-                <HelpCircle className="w-6 h-6" />
-              </div>
-              <h4 className="font-bold text-sm text-gray-900">¿Olvidaste tus credenciales?</h4>
-              <p className="text-xs text-gray-600 leading-relaxed">
-                Por políticas de seguridad de <strong>Madrigales Pastelería</strong>, el restablecimiento de contraseñas es gestionado directamente por el <strong>Propietario o Administrador</strong> del sistema desde el módulo de usuarios.
-              </p>
-              <button
-                type="button"
-                onClick={() => setIsForgotModalOpen(false)}
-                className="w-full btn-primary text-xs py-2.5"
-              >
-                Entendido
-              </button>
-            </div>
-          </Modal>
-        )}
+        <div className="pt-2 text-center">
+          <p className="text-[11px] text-slate-500">
+            Madrigales Pastelería &copy; 2026 &middot; Sistema de Gestión y POS
+          </p>
+        </div>
       </div>
     </div>
   )

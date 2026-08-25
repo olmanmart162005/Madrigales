@@ -5,9 +5,10 @@ import { logActivity } from './activity'
  * Crea o actualiza un usuario en el sistema.
  * Utiliza la función RPC segura 'create_system_user_rpc' con privilegios de servidor.
  */
-export async function createSystemUser({ email, password, full_name, phone, role }) {
+export async function createSystemUser({ email, password, full_name, username, phone, role }) {
   const cleanEmail = email.trim().toLowerCase()
   const cleanName = full_name.trim()
+  const cleanUsername = (username || cleanEmail.split('@')[0]).trim().toLowerCase()
   const assignedRole = role === 'administrador' ? 'administrador' : 'cajero'
 
   try {
@@ -15,13 +16,14 @@ export async function createSystemUser({ email, password, full_name, phone, role
       p_email: cleanEmail,
       p_password: password,
       p_full_name: cleanName,
+      p_username: cleanUsername,
       p_phone: phone ? phone.trim() : null,
       p_role: assignedRole,
     })
 
     if (!rpcError && rpcData) {
       await logActivity({
-        action: `Creó o reactivó al usuario "${cleanName}" (${assignedRole})`,
+        action: `Creó al usuario "${cleanName}" (@${cleanUsername}) como ${assignedRole}`,
         entityType: 'user',
         entityId: rpcData.id || null,
         entityName: cleanName,
@@ -36,6 +38,32 @@ export async function createSystemUser({ email, password, full_name, phone, role
     throw new Error('No se pudo crear el usuario')
   } catch (err) {
     console.error('Error creating user:', err)
+    throw err
+  }
+}
+
+/**
+ * Restablece la contraseña de un usuario mediante la función RPC segura.
+ */
+export async function resetUserPassword(userId, newPassword, userName = '') {
+  try {
+    const { data, error } = await supabase.rpc('reset_user_password_rpc', {
+      p_user_id: userId,
+      p_new_password: newPassword,
+    })
+
+    if (error) throw error
+
+    await logActivity({
+      action: `Restableció la contraseña del usuario "${userName || userId}"`,
+      entityType: 'user',
+      entityId: userId,
+      entityName: userName,
+    })
+
+    return { success: true }
+  } catch (err) {
+    console.error('Error resetting password:', err)
     throw err
   }
 }
