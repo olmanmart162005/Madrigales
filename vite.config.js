@@ -8,9 +8,11 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
+      injectRegister: 'auto',
       includeAssets: [
         'icons/pwa-192x192.png',
         'icons/pwa-512x512.png',
+        'icons/maskable-icon-192x192.png',
         'icons/maskable-icon-512x512.png',
         'icons/apple-touch-icon.png',
         'LOGO_OFICIAL_BLANCO.png',
@@ -20,15 +22,24 @@ export default defineConfig({
         'robots.txt'
       ],
       manifest: {
+        id: '/',
         name: 'Madrigales Pastelería',
         short_name: 'Madrigales',
-        description: 'Sistema de gestión para Madrigales Pastelería',
-        theme_color: '#7C3AED',
-        background_color: '#FFFFFF',
-        display: 'standalone',
-        orientation: 'any',
+        description: 'Sistema de gestión y punto de venta de Madrigales Pastelería',
+        lang: 'es-HN',
+        dir: 'ltr',
         start_url: '/',
         scope: '/',
+        display: 'standalone',
+        display_override: [
+          'window-controls-overlay',
+          'standalone',
+          'minimal-ui'
+        ],
+        theme_color: '#7C3AED',
+        background_color: '#FFFFFF',
+        orientation: 'portrait-primary',
+        categories: ['business', 'productivity', 'food'],
         icons: [
           {
             src: '/icons/pwa-192x192.png',
@@ -66,7 +77,7 @@ export default defineConfig({
             urlPattern: /^https:\/\/olmzeebxhpvettrrtbet\.supabase\.co\/.*/i,
             handler: 'NetworkFirst',
             options: {
-              cacheName: 'supabase-cache-v2',
+              cacheName: 'supabase-cache-v3',
               expiration: {
                 maxEntries: 100,
                 maxAgeSeconds: 60 * 60 * 24

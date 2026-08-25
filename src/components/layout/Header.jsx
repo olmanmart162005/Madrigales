@@ -30,29 +30,57 @@ export default function Header({ onToggleSidebar }) {
   const navigate = useNavigate()
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const [installPrompt, setInstallPrompt] = useState(null)
+  const [isStandalone, setIsStandalone] = useState(false)
   const dropdownRef = useRef(null)
 
   const title = getPageTitle(location.pathname)
   const owner = isOwner()
 
   useEffect(() => {
+    // Detectar si la aplicación ya está instalada / modo standalone
+    const checkStandalone = () => {
+      const isStandaloneMode =
+        window.matchMedia('(display-mode: standalone)').matches ||
+        window.navigator.standalone === true ||
+        document.referrer.includes('android-app://')
+      setIsStandalone(isStandaloneMode)
+    }
+
+    checkStandalone()
+    const matcher = window.matchMedia('(display-mode: standalone)')
+    matcher.addEventListener?.('change', checkStandalone)
+
     const handlePrompt = (e) => {
       e.preventDefault()
       setInstallPrompt(e)
     }
+
+    const handleAppInstalled = () => {
+      setInstallPrompt(null)
+      setIsStandalone(true)
+      toast.success('¡Madrigales Pastelería instalada con éxito!')
+    }
+
     window.addEventListener('beforeinstallprompt', handlePrompt)
-    return () => window.removeEventListener('beforeinstallprompt', handlePrompt)
+    window.addEventListener('appinstalled', handleAppInstalled)
+
+    return () => {
+      matcher.removeEventListener?.('change', checkStandalone)
+      window.removeEventListener('beforeinstallprompt', handlePrompt)
+      window.removeEventListener('appinstalled', handleAppInstalled)
+    }
   }, [])
 
   const handleInstallApp = async () => {
     if (!installPrompt) {
-      toast('Para instalar en tu dispositivo, usa la opción "Instalar aplicación" o "Agregar a pantalla de inicio" en tu navegador.', { icon: '📱' })
+      toast('Para instalar en tu dispositivo, presiona "Instalar aplicación" en el menú de tu navegador.', { icon: '📱' })
       return
     }
     installPrompt.prompt()
     const { outcome } = await installPrompt.userChoice
     if (outcome === 'accepted') {
       setInstallPrompt(null)
+      setIsStandalone(true)
       toast.success('¡Madrigales Pastelería instalada con éxito!')
     }
   }
@@ -118,15 +146,17 @@ export default function Header({ onToggleSidebar }) {
 
       {/* Acciones del Header: Instalar App & Perfil */}
       <div className="flex items-center gap-2 sm:gap-3">
-        {/* Botón PWA */}
-        <button
-          onClick={handleInstallApp}
-          title="Instalar como aplicación nativa"
-          className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-purple-50 hover:bg-purple-100 text-purple-700 text-xs font-bold transition-all border border-purple-200/70 shadow-2xs cursor-pointer"
-        >
-          <Download className="w-3.5 h-3.5" />
-          <span className="hidden sm:inline">Instalar App</span>
-        </button>
+        {/* Botón PWA (Oculto si la aplicación ya está instalada) */}
+        {!isStandalone && (
+          <button
+            onClick={handleInstallApp}
+            title="Instalar como aplicación nativa"
+            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-purple-50 hover:bg-purple-100 text-purple-700 text-xs font-bold transition-all border border-purple-200/70 shadow-2xs cursor-pointer"
+          >
+            <Download className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Instalar App</span>
+          </button>
+        )}
 
         {/* Dropdown de usuario */}
         <div className="relative" ref={dropdownRef}>
