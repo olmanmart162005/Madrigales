@@ -1,11 +1,10 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
 import {
   ArrowLeft, Plus, Trash2, ShoppingCart, Calendar,
-  CreditCard, User, Clock, FileText, CheckCircle2, Layers, Minus
+  CreditCard, User, Clock, FileText, CheckCircle2, Layers, Minus,
+  Banknote, AlertCircle, Sparkles, Check, CheckCheck, PackageCheck,
+  CalendarClock, Store, ArrowRight
 } from 'lucide-react'
 import PosProductCatalog from './components/PosProductCatalog'
 import { usePaymentMethods } from './hooks/useOrders'
@@ -16,18 +15,6 @@ import { logActivity } from '@/lib/activity'
 import { formatCurrency } from '@/utils'
 import toast from 'react-hot-toast'
 
-const orderSchema = z.object({
-  customer_name: z.string().optional(),
-  order_date: z.string().min(1, 'La fecha del pedido es requerida'),
-  delivery_date: z.string().optional(),
-  delivery_time: z.string().optional(),
-  payment_method_id: z.string().optional(),
-  discount: z.coerce.number().min(0, 'El descuento no puede ser negativo').default(0),
-  amount_paid: z.coerce.number().min(0, 'El abono no puede ser negativo').default(0),
-  notes: z.string().optional(),
-  status: z.enum(['pendiente', 'en_preparacion', 'listo', 'entregado', 'cancelado']).default('pendiente'),
-})
-
 export default function NewOrderPage() {
   const [items, setItems] = useState([])
   const [submitting, setSubmitting] = useState(false)
@@ -37,32 +24,102 @@ export default function NewOrderPage() {
   const currencySymbol = getCurrencySymbol()
   const { paymentMethods } = usePaymentMethods()
 
-  const today = new Date().toISOString().split('T')[0]
+  const todayStr = new Date().toISOString().split('T')[0]
+  const currentTimeStr = new Date().toTimeString().slice(0, 5)
 
-  const {
-    register,
-    handleSubmit,
-    watch,
-    formState: { errors },
-  } = useForm({
-    resolver: zodResolver(orderSchema),
-    defaultValues: {
-      customer_name: '',
-      order_date: today,
-      delivery_date: '',
-      delivery_time: '',
-      payment_method_id: '',
-      discount: 0,
-      amount_paid: 0,
-      notes: '',
-      status: 'pendiente',
-    },
-  })
+  // ==========================================
+  // ESTADOS DEL FORMULARIO
+  // ==========================================
+  const [customerName, setCustomerName] = useState('')
+  const [orderDate, setOrderDate] = useState(todayStr)
+  const [isScheduled, setIsScheduled] = useState(false)
+  const [deliveryDate, setDeliveryDate] = useState('')
+  const [deliveryTime, setDeliveryTime] = useState('')
+  const [immediateDelivery, setImmediateDelivery] = useState(true) // Si es venta inmediata, entregar de inmediato
+  const [notes, setNotes] = useState('')
+  const [discount, setDiscount] = useState(0)
 
-  const discount = Number(watch('discount')) || 0
-  const amountPaid = Number(watch('amount_paid')) || 0
+  // Estado de Pago: 'pagado' (completo), 'parcial' (abono), 'pendiente'
+  const [paymentStatus, setPaymentStatus] = useState('pagado')
+  const [paymentMethodId, setPaymentMethodId] = useState('')
+  const [customAbono, setCustomAbono] = useState('')
+  const [cashReceived, setCashReceived] = useState('')
 
-  // Agregar producto o variante a la orden
+  // Establecer método 'Efectivo' por defecto al cargar los métodos
+  useEffect(() => {
+    if (paymentMethods && paymentMethods.length > 0 && !paymentMethodId) {
+      const cashMethod = paymentMethods.find(
+        (m) => m.name.toLowerCase().includes('efectivo')
+      )
+      if (cashMethod) {
+        setPaymentMethodId(cashMethod.id)
+      } else {
+        setPaymentMethodId(paymentMethods[0].id)
+      }
+    }
+  }, [paymentMethods, paymentMethodId])
+
+  // Método seleccionado actual
+  const selectedMethod = useMemo(() => {
+    return paymentMethods.find((m) => m.id === paymentMethodId) || null
+  }, [paymentMethods, paymentMethodId])
+
+  const isCashMethod = useMemo(() => {
+    if (!selectedMethod) return false
+    return selectedMethod.name.toLowerCase().includes('efectivo')
+  }, [selectedMethod])
+
+  // ==========================================
+  // CÁLCULOS MATEMÁTICOS DEL PEDIDO
+  // ==========================================
+  const subtotal = useMemo(() => {
+    return items.reduce((acc, curr) => acc + curr.subtotal, 0)
+  }, [items])
+
+  const discountAmount = Number(discount) || 0
+  const total = Math.max(0, subtotal - discountAmount)
+
+  // Monto a cobrar / abonar según el estado de pago seleccionado
+  const amountToCharge = useMemo(() => {
+    if (paymentStatus === 'pagado') {
+      return total
+    }
+    if (paymentStatus === 'parcial') {
+      const parsed = parseFloat(customAbono) || 0
+      return Math.min(total, Math.max(0, parsed))
+    }
+    return 0 // 'pendiente'
+  }, [paymentStatus, total, customAbono])
+
+  const balance = Math.max(0, total - amountToCharge)
+
+  // Cálculo de Efectivo Recibido y Vuelto
+  const numCashReceived = parseFloat(cashReceived) || 0
+  const cashDifference = numCashReceived - amountToCharge
+  const isExactPayment = isCashMethod && amountToCharge > 0 && Math.abs(cashDifference) < 0.001
+  const hasCashChange = isCashMethod && amountToCharge > 0 && cashDifference > 0.001
+  const hasCashShortage = isCashMethod && amountToCharge > 0 && cashReceived !== '' && cashDifference < -0.001
+
+  // Autocompletar efectivo recibido cuando cambia a pago exacto o total
+  const handleSetExactCash = () => {
+    if (amountToCharge > 0) {
+      setCashReceived(amountToCharge.toFixed(2))
+    }
+  }
+
+  const handleAddCash = (extra) => {
+    const current = parseFloat(cashReceived) || 0
+    const base = current > 0 ? current : amountToCharge
+    setCashReceived((base + extra).toFixed(2))
+  }
+
+  const handleSetCashBill = (billAmount) => {
+    setCashReceived(billAmount.toFixed(2))
+  }
+
+  // ==========================================
+  // GESTIÓN DEL CARRITO / DETALLE DE PRODUCTOS
+  // ==========================================
   const handleAddProduct = (product, variant = null) => {
     const variantId = variant?.id || null
     const variantName = variant?.name || null
@@ -78,7 +135,7 @@ export default function NewOrderPage() {
       updated[existingIndex].subtotal =
         updated[existingIndex].quantity * updated[existingIndex].unit_price
       setItems(updated)
-      toast.success(`+1 ${product.name} (${variantName || 'Estándar'})`, { duration: 1200 })
+      toast.success(`+1 ${product.name} (${variantName || 'Estándar'})`, { duration: 1000 })
     } else {
       setItems([
         ...items,
@@ -87,16 +144,15 @@ export default function NewOrderPage() {
           product_name: product.name,
           variant_id: variantId,
           variant_name: variantName,
-          unit_price: price, // SNAPSHOT HISTÓRICO INMUTABLE
+          unit_price: price, // SNAPSHOT INMUTABLE DE PRECIO
           quantity: 1,
           subtotal: price,
         },
       ])
-      toast.success(`Agregado: ${product.name} (${variantName || 'Estándar'})`, { duration: 1200 })
+      toast.success(`Agregado: ${product.name} (${variantName || 'Estándar'})`, { duration: 1000 })
     }
   }
 
-  // Modificar cantidad
   const handleQuantityChange = (index, delta) => {
     const updated = [...items]
     const newQty = updated[index].quantity + delta
@@ -109,33 +165,14 @@ export default function NewOrderPage() {
     setItems(updated)
   }
 
-  // Modificar cantidad directamente
-  const handleDirectQuantity = (index, newQty) => {
-    const qty = parseInt(newQty, 10) || 1
-    if (qty < 1) return
-    const updated = [...items]
-    updated[index].quantity = qty
-    updated[index].subtotal = qty * updated[index].unit_price
-    setItems(updated)
-  }
-
-  // Eliminar producto de la orden
   const handleRemoveItem = (index) => {
     setItems(items.filter((_, i) => i !== index))
   }
 
-  // Cálculos en tiempo real
-  const subtotal = items.reduce((acc, curr) => acc + curr.subtotal, 0)
-  const total = Math.max(0, subtotal - discount)
-  const balance = Math.max(0, total - amountPaid)
-
   // Generador único de número de pedido MAD-000001
   const generateNextOrderNumber = async () => {
     try {
-      const { data, error } = await supabase
-        .from('orders')
-        .select('order_number')
-
+      const { data, error } = await supabase.from('orders').select('order_number')
       if (error) throw error
 
       let maxNum = 0
@@ -150,7 +187,6 @@ export default function NewOrderPage() {
           }
         })
       }
-
       const nextNum = maxNum + 1
       return `MAD-${String(nextNum).padStart(6, '0')}`
     } catch {
@@ -158,24 +194,53 @@ export default function NewOrderPage() {
     }
   }
 
-  const onSubmit = async (values) => {
+  // ==========================================
+  // VALIDACIÓN Y PROCESAMIENTO DEL COBRO (SUBMIT)
+  // ==========================================
+  const handleProcessOrder = async (e) => {
+    e.preventDefault()
+
+    // 1. Validar productos
     if (items.length === 0) {
       toast.error('Debes seleccionar al menos un producto del catálogo')
       return
     }
 
-    if (amountPaid > total) {
-      toast.error('El abono no puede ser mayor que el total del pedido')
-      return
+    // 2. Validar pedido programado
+    if (isScheduled) {
+      if (!deliveryDate) {
+        toast.error('Ingresa la fecha de entrega para el pedido programado')
+        return
+      }
+      if (!deliveryTime) {
+        toast.error('Ingresa la hora de entrega para el pedido programado')
+        return
+      }
     }
 
-    const calculatedBalance = Math.max(0, total - amountPaid)
+    // 3. Validar estado de pago y montos
+    if (paymentStatus === 'parcial') {
+      const parsedAbono = parseFloat(customAbono) || 0
+      if (parsedAbono <= 0) {
+        toast.error('Ingresa un monto válido para el abono')
+        return
+      }
+      if (parsedAbono >= total) {
+        toast.error('El abono parcial debe ser menor al total. Si paga completo, selecciona "Pago Completo"')
+        return
+      }
+    }
 
-    if (values.status === 'entregado' && calculatedBalance > 0) {
-      toast.error(
-        `No se puede marcar el pedido como "Entregado" porque tiene un saldo pendiente de ${formatCurrency(calculatedBalance, currencySymbol)}. Primero debe registrarse el pago completo.`
-      )
-      return
+    // 4. Validar efectivo recibido cuando corresponda
+    if (isCashMethod && amountToCharge > 0) {
+      if (cashReceived === '' || numCashReceived <= 0) {
+        toast.error('Ingresa el monto de efectivo recibido para calcular el vuelto')
+        return
+      }
+      if (numCashReceived < amountToCharge) {
+        toast.error(`Efectivo insuficiente. Faltan ${formatCurrency(amountToCharge - numCashReceived, currencySymbol)}`)
+        return
+      }
     }
 
     try {
@@ -185,25 +250,46 @@ export default function NewOrderPage() {
       let attempts = 0
       const maxAttempts = 5
 
+      // Determinar estado de entrega (status):
+      // - Si es venta inmediata, está pagada y marcada como entrega inmediata -> 'entregado'
+      // - Si es venta inmediata pero no entregada aún -> 'listo'
+      // - Si es pedido programado -> 'pendiente'
+      let finalOrderStatus = 'pendiente'
+      if (!isScheduled) {
+        if (paymentStatus === 'pagado' && immediateDelivery) {
+          finalOrderStatus = 'entregado'
+        } else {
+          finalOrderStatus = 'listo'
+        }
+      }
+
+      const calculatedChange = isCashMethod && amountToCharge > 0 && numCashReceived >= amountToCharge
+        ? numCashReceived - amountToCharge
+        : null
+
       while (!newOrder && attempts < maxAttempts) {
         attempts++
         const orderPayload = {
           order_number: orderNumber,
-          customer_name: values.customer_name?.trim() || null, // Opcional
-          order_date: values.order_date,
-          delivery_date: values.delivery_date || null,
-          delivery_time: values.delivery_time || null,
-          payment_method_id: values.payment_method_id || null,
+          customer_name: customerName.trim() || null,
+          order_date: orderDate || todayStr,
+          delivery_date: isScheduled ? deliveryDate : (orderDate || todayStr),
+          delivery_time: isScheduled ? deliveryTime : currentTimeStr,
+          payment_method_id: amountToCharge > 0 ? (paymentMethodId || null) : null,
           subtotal,
-          discount,
+          discount: discountAmount,
           total,
-          amount_paid: amountPaid,
-          notes: values.notes?.trim() || null,
-          status: values.status,
+          amount_paid: amountToCharge,
+          notes: notes.trim() || null,
+          status: finalOrderStatus,
+          order_type: isScheduled ? 'programado' : 'inmediato',
+          payment_status: paymentStatus,
+          cash_received: isCashMethod && amountToCharge > 0 ? numCashReceived : null,
+          change_returned: calculatedChange,
           created_by: user?.id || null,
         }
 
-        const { data, error: orderError } = await supabase
+        const { data: orderData, error: orderError } = await supabase
           .from('orders')
           .insert([orderPayload])
           .select()
@@ -218,14 +304,14 @@ export default function NewOrderPage() {
           throw orderError
         }
 
-        newOrder = data
+        newOrder = orderData
       }
 
       if (!newOrder) {
         throw new Error('No se pudo generar el número de pedido. Intenta nuevamente.')
       }
 
-      // Insertar Detalle de Pedido (order_items) con snapshot inmutable
+      // 5. Insertar Detalle de Productos con SNAPSHOT INMUTABLE DE PRECIO
       const orderItemsPayload = items.map((item) => ({
         order_id: newOrder.id,
         product_id: item.product_id,
@@ -242,66 +328,112 @@ export default function NewOrderPage() {
 
       if (itemsError) throw itemsError
 
-      // Si se registró un abono inicial, guardarlo en order_payments para el historial financiero
-      if (amountPaid > 0) {
-        await supabase.from('order_payments').insert({
+      // 6. Registrar en el HISTORIAL DE PAGOS (order_payments) si hubo pago / abono
+      if (amountToCharge > 0) {
+        const { error: payError } = await supabase.from('order_payments').insert({
           order_id: newOrder.id,
-          amount: amountPaid,
-          payment_method_id: values.payment_method_id || null,
-          payment_date: values.order_date || new Date().toISOString(),
-          notes: 'Pago / abono inicial registrado al crear el pedido',
+          amount: amountToCharge,
+          payment_method_id: paymentMethodId || null,
+          cash_received: isCashMethod ? numCashReceived : null,
+          change_returned: calculatedChange,
+          payment_date: new Date().toISOString(),
+          notes: paymentStatus === 'pagado'
+            ? 'Pago completo registrado en caja'
+            : `Abono inicial registrado en caja (Saldo: ${formatCurrency(balance, currencySymbol)})`,
           created_by: user?.id || null,
         })
+
+        if (payError) {
+          console.warn('Could not register in order_payments:', payError)
+        }
       }
 
-      // Registrar Log de Actividad
+      // 7. Registrar Log de Actividad
       await logActivity({
-        action: `Registró el pedido #${newOrder.order_number}${
-          values.customer_name ? ` para ${values.customer_name}` : ''
-        } por un total de ${formatCurrency(total, currencySymbol)}${
-          amountPaid > 0 ? ` con un abono de ${formatCurrency(amountPaid, currencySymbol)}` : ''
+        action: `Registró venta #${newOrder.order_number} (${
+          isScheduled ? 'Pedido Programado' : 'Venta Inmediata'
+        }) por ${formatCurrency(total, currencySymbol)} · ${
+          paymentStatus === 'pagado' ? 'Pagado Completo' : paymentStatus === 'parcial' ? 'Abonado' : 'Pendiente'
         }`,
         entityType: 'order',
         entityId: newOrder.id,
         entityName: `#${newOrder.order_number}`,
         details: {
-          itemsCount: items.length,
+          order_type: isScheduled ? 'programado' : 'inmediato',
+          payment_status: paymentStatus,
           total,
+          amount_paid: amountToCharge,
           balance,
+          cash_received: isCashMethod ? numCashReceived : null,
+          change_returned: calculatedChange,
         },
       })
 
-      toast.success(`Pedido #${newOrder.order_number} registrado exitosamente`)
+      toast.success(`Venta #${newOrder.order_number} procesada con éxito`)
       navigate(`/pedidos/${newOrder.id}`)
     } catch (err) {
       console.error('Error creating order:', err)
-      toast.error('Error al registrar pedido: ' + (err.message || 'Verifica los datos'))
+      toast.error('Error al procesar pedido: ' + (err.message || 'Verifica los datos ingresados'))
     } finally {
       setSubmitting(false)
     }
   }
 
   return (
-    <div className="space-y-6 pb-12 animate-fade-in">
-      {/* Encabezado */}
-      <div className="flex items-center gap-3">
-        <Link
-          to="/pedidos"
-          className="p-2 rounded-xl bg-white border border-gray-200 text-gray-600 hover:text-purple-700 hover:bg-purple-50 transition-colors shadow-2xs cursor-pointer"
-        >
-          <ArrowLeft className="w-5 h-5" />
-        </Link>
-        <div>
-          <h1 className="text-xl sm:text-2xl font-black text-gray-900 tracking-tight">
-            Punto de Venta · Registrar Pedido
-          </h1>
-          <p className="text-xs sm:text-sm text-gray-500">
-            Haz clic en los productos y presentaciones del catálogo para armar el pedido rápidamente.
-          </p>
+    <div className="space-y-6 pb-16 animate-fade-in font-sans">
+      {/* Encabezado Superior */}
+      <div className="flex items-center justify-between gap-4 flex-wrap">
+        <div className="flex items-center gap-3">
+          <Link
+            to="/pedidos"
+            className="p-2.5 rounded-2xl bg-white border border-gray-200 text-gray-600 hover:text-purple-700 hover:bg-purple-50 transition-colors shadow-2xs cursor-pointer"
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </Link>
+          <div>
+            <h1 className="text-xl sm:text-2xl font-black text-gray-900 tracking-tight flex items-center gap-2">
+              <span>Punto de Venta · Caja</span>
+              <span className="text-xs px-2.5 py-0.5 rounded-full bg-purple-100 text-purple-900 font-bold border border-purple-200">
+                POS Madrigales
+              </span>
+            </h1>
+            <p className="text-xs text-gray-500 mt-0.5">
+              Haz clic en los productos para armar la orden y cobrar rápidamente.
+            </p>
+          </div>
+        </div>
+
+        {/* Toggle Rápido: Venta Inmediata vs Pedido Programado */}
+        <div className="bg-white p-1.5 rounded-2xl border border-purple-100 shadow-xs flex items-center gap-1">
+          <button
+            type="button"
+            onClick={() => setIsScheduled(false)}
+            className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+              !isScheduled
+                ? 'bg-purple-900 text-white shadow-xs'
+                : 'text-gray-600 hover:bg-purple-50 hover:text-purple-900'
+            }`}
+          >
+            <Store className="w-4 h-4" />
+            <span>Venta Inmediata</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setIsScheduled(true)}
+            className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+              isScheduled
+                ? 'bg-purple-900 text-white shadow-xs'
+                : 'text-gray-600 hover:bg-purple-50 hover:text-purple-900'
+            }`}
+          >
+            <CalendarClock className="w-4 h-4" />
+            <span>Pedido Programado</span>
+          </button>
         </div>
       </div>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      <form onSubmit={handleProcessOrder} className="space-y-6">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* ============================================================
               COLUMNA IZQUIERDA (7 cols): CATÁLOGO VISUAL DE PRODUCTOS
@@ -310,13 +442,13 @@ export default function NewOrderPage() {
             <div className="card p-4 sm:p-5 bg-white border border-purple-100 shadow-xs space-y-4">
               <div className="flex items-center justify-between border-b border-gray-100 pb-3">
                 <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-xl bg-purple-100 text-purple-800 flex items-center justify-center font-bold text-xs">
+                  <div className="w-8 h-8 rounded-xl bg-purple-100 text-purple-900 flex items-center justify-center font-bold text-xs">
                     1
                   </div>
                   <div>
                     <h3 className="text-sm font-bold text-gray-900">Catálogo de Productos</h3>
                     <p className="text-[11px] text-gray-500">
-                      Selecciona la categoría y haz clic en el tamaño deseado
+                      Selecciona una categoría y haz clic en la presentación deseada
                     </p>
                   </div>
                 </div>
@@ -333,38 +465,39 @@ export default function NewOrderPage() {
                 <span>Observaciones del Pedido (Dedicatoria, decorado, etc.)</span>
               </label>
               <textarea
-                {...register('notes')}
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
                 rows={2}
-                placeholder="Ej. Dedicatoria en el pastel, flores en tono lila, retirar a las 4:00 PM..."
-                className="input text-xs resize-none"
+                placeholder="Ej. Dedicatoria: '¡Feliz Cumpleaños Mamá!', flores lila, empacar para regalo..."
+                className="input text-xs resize-none rounded-xl"
               />
             </div>
           </div>
 
           {/* ============================================================
-              COLUMNA DERECHA (5 cols): RESUMEN DE ORDEN & FACTURACIÓN
+              COLUMNA DERECHA (5 cols): RESUMEN, PAGOS & COBRO COMERCIAL
               ============================================================ */}
           <div className="lg:col-span-5 space-y-5">
-            {/* Lista de Productos en la Orden */}
+            {/* 1. Detalle de Productos en la Orden */}
             <div className="card p-4 sm:p-5 bg-white border border-purple-100 shadow-xs space-y-3">
               <div className="flex items-center justify-between border-b border-gray-100 pb-2.5">
                 <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-xl bg-purple-100 text-purple-800 flex items-center justify-center font-bold text-xs">
+                  <div className="w-8 h-8 rounded-xl bg-purple-100 text-purple-900 flex items-center justify-center font-bold text-xs">
                     2
                   </div>
-                  <h3 className="text-sm font-bold text-gray-900">Detalle del Pedido</h3>
+                  <h3 className="text-sm font-bold text-gray-900">Detalle de la Orden</h3>
                 </div>
-                <span className="text-xs font-extrabold text-purple-800 bg-purple-50 px-2.5 py-1 rounded-lg border border-purple-100">
+                <span className="text-xs font-black text-purple-900 bg-purple-50 px-2.5 py-1 rounded-lg border border-purple-100">
                   {items.length} {items.length === 1 ? 'ítem' : 'ítems'}
                 </span>
               </div>
 
               {items.length === 0 ? (
-                <div className="p-6 border-2 border-dashed border-purple-100 rounded-2xl text-center bg-purple-50/20 my-2">
+                <div className="p-8 border-2 border-dashed border-purple-100 rounded-2xl text-center bg-purple-50/20 my-2">
                   <ShoppingCart className="w-8 h-8 text-purple-300 mx-auto mb-1.5" />
                   <p className="text-xs font-bold text-gray-700">Orden vacía</p>
                   <p className="text-[10px] text-gray-400 mt-0.5">
-                    Haz clic en cualquier presentación del catálogo a la izquierda para agregar.
+                    Haz clic en los productos del catálogo a la izquierda para agregar a la venta.
                   </p>
                 </div>
               ) : (
@@ -392,7 +525,7 @@ export default function NewOrderPage() {
                         </div>
                       </div>
 
-                      {/* Controles de Cantidad + / - */}
+                      {/* Controles de Cantidad */}
                       <div className="flex items-center gap-1.5">
                         <button
                           type="button"
@@ -426,8 +559,8 @@ export default function NewOrderPage() {
                       <button
                         type="button"
                         onClick={() => handleRemoveItem(index)}
-                        className="p-1 text-gray-300 hover:text-red-600 transition-colors"
-                        title="Quitar"
+                        className="p-1 text-gray-300 hover:text-red-600 transition-colors cursor-pointer"
+                        title="Quitar ítem"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
@@ -437,56 +570,148 @@ export default function NewOrderPage() {
               )}
             </div>
 
-            {/* Datos del Cliente y Entrega */}
+            {/* 2. Cliente y Programación de Entrega */}
             <div className="card p-4 sm:p-5 bg-white border border-purple-100 shadow-xs space-y-3">
               <div>
-                <label className="label text-xs">
+                <label className="label text-xs font-bold text-gray-700">
                   Cliente <span className="text-gray-400 font-normal">(Opcional)</span>
                 </label>
                 <div className="relative">
                   <User className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
                   <input
-                    {...register('customer_name')}
                     type="text"
-                    placeholder="Nombre del cliente o mostrador"
+                    value={customerName}
+                    onChange={(e) => setCustomerName(e.target.value)}
+                    placeholder="Consumidor Final o Nombre del Cliente"
                     className="input pl-9 text-xs"
                   />
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-2.5">
-                <div>
-                  <label className="label text-xs">Fecha Pedido *</label>
-                  <input {...register('order_date')} type="date" className="input text-xs" />
-                </div>
-                <div>
-                  <label className="label text-xs">Fecha Entrega</label>
-                  <input {...register('delivery_date')} type="date" className="input text-xs" />
-                </div>
-              </div>
+              {/* Si es Pedido Programado -> Mostrar Fecha y Hora de Entrega Obligatorias */}
+              {isScheduled ? (
+                <div className="p-3.5 bg-purple-50/70 border border-purple-200 rounded-2xl space-y-2.5 animate-fade-in">
+                  <div className="flex items-center gap-2 text-xs font-bold text-purple-900">
+                    <CalendarClock className="w-4 h-4 text-purple-700" />
+                    <span>Programación de Entrega *</span>
+                  </div>
 
-              <div className="grid grid-cols-2 gap-2.5">
-                <div>
-                  <label className="label text-xs">Hora Entrega</label>
-                  <input {...register('delivery_time')} type="time" className="input text-xs" />
+                  <div className="grid grid-cols-2 gap-2.5">
+                    <div>
+                      <label className="text-[11px] font-bold text-gray-700 block mb-1">Fecha de Entrega *</label>
+                      <input
+                        type="date"
+                        min={todayStr}
+                        value={deliveryDate}
+                        onChange={(e) => setDeliveryDate(e.target.value)}
+                        className="input text-xs bg-white"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[11px] font-bold text-gray-700 block mb-1">Hora de Entrega *</label>
+                      <input
+                        type="time"
+                        value={deliveryTime}
+                        onChange={(e) => setDeliveryTime(e.target.value)}
+                        className="input text-xs bg-white"
+                        required
+                      />
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <label className="label text-xs">Método de Pago</label>
-                  <select {...register('payment_method_id')} className="input text-xs">
-                    <option value="">Seleccionar</option>
-                    {paymentMethods.map((m) => (
-                      <option key={m.id} value={m.id}>
-                        {m.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
+              ) : (
+                /* Venta Inmediata: Opción de entrega inmediata en mostrador */
+                <label className="flex items-center gap-2.5 p-2.5 bg-gray-50 hover:bg-purple-50/50 rounded-xl border border-gray-100 cursor-pointer transition-colors">
+                  <input
+                    type="checkbox"
+                    checked={immediateDelivery}
+                    onChange={(e) => setImmediateDelivery(e.target.checked)}
+                    className="rounded text-purple-700 focus:ring-purple-500 w-4 h-4"
+                  />
+                  <span className="text-xs text-gray-700 font-medium">
+                    Entregar productos de inmediato al cliente en mostrador
+                  </span>
+                </label>
+              )}
             </div>
 
-            {/* Resumen Financiero y Botón Final */}
-            <div className="card p-5 bg-gradient-to-br from-purple-950 via-[#2C1536] to-purple-900 text-white shadow-lg space-y-3.5 rounded-2xl">
-              <div className="space-y-2 text-xs">
+            {/* 3. SECCIÓN DE PAGO Y FACTURACIÓN COMERCIAL (POS) */}
+            <div className="card p-5 bg-gradient-to-br from-[#230d2a] via-[#32123d] to-[#1f0b26] text-white shadow-xl space-y-4 rounded-3xl border border-purple-900/60">
+              {/* Selector de Estado de Pago: Completo (default) | Parcial | Pendiente */}
+              <div>
+                <label className="text-xs font-bold text-purple-200 uppercase tracking-wider block mb-2">
+                  Estado de Pago
+                </label>
+                <div className="grid grid-cols-3 gap-1.5 bg-black/30 p-1 rounded-2xl border border-purple-800/40">
+                  <button
+                    type="button"
+                    onClick={() => setPaymentStatus('pagado')}
+                    className={`py-2 px-2 rounded-xl text-xs font-extrabold transition-all cursor-pointer text-center ${
+                      paymentStatus === 'pagado'
+                        ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-md'
+                        : 'text-gray-300 hover:text-white hover:bg-white/5'
+                    }`}
+                  >
+                    Pago Completo
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setPaymentStatus('parcial')}
+                    className={`py-2 px-2 rounded-xl text-xs font-extrabold transition-all cursor-pointer text-center ${
+                      paymentStatus === 'parcial'
+                        ? 'bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white shadow-md'
+                        : 'text-gray-300 hover:text-white hover:bg-white/5'
+                    }`}
+                  >
+                    Abono / Parcial
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setPaymentStatus('pendiente')}
+                    className={`py-2 px-2 rounded-xl text-xs font-extrabold transition-all cursor-pointer text-center ${
+                      paymentStatus === 'pendiente'
+                        ? 'bg-gradient-to-r from-amber-600 to-orange-600 text-white shadow-md'
+                        : 'text-gray-300 hover:text-white hover:bg-white/5'
+                    }`}
+                  >
+                    Pendiente
+                  </button>
+                </div>
+              </div>
+
+              {/* Selector de Método de Pago */}
+              {paymentStatus !== 'pendiente' && (
+                <div>
+                  <label className="text-xs font-bold text-purple-200 block mb-1.5">
+                    Método de Pago
+                  </label>
+                  <div className="grid grid-cols-3 sm:grid-cols-5 gap-1.5">
+                    {paymentMethods.map((m) => {
+                      const isSelected = paymentMethodId === m.id
+                      return (
+                        <button
+                          key={m.id}
+                          type="button"
+                          onClick={() => setPaymentMethodId(m.id)}
+                          className={`py-1.5 px-2 rounded-xl text-[11px] font-bold transition-all cursor-pointer border truncate ${
+                            isSelected
+                              ? 'bg-white text-purple-950 border-white shadow-xs'
+                              : 'bg-white/5 text-purple-200 border-purple-800/40 hover:bg-white/10'
+                          }`}
+                        >
+                          {m.name}
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Resumen de Totales y Descuentos */}
+              <div className="space-y-2 text-xs pt-1 border-t border-purple-800/50">
                 <div className="flex items-center justify-between text-purple-200">
                   <span>Subtotal:</span>
                   <span className="font-bold text-white">
@@ -499,55 +724,181 @@ export default function NewOrderPage() {
                   <div className="flex items-center gap-1">
                     <span className="text-purple-300 font-bold">{currencySymbol}</span>
                     <input
-                      {...register('discount')}
                       type="number"
                       step="0.01"
                       min="0"
-                      className="w-20 h-7 text-right text-xs bg-purple-900/80 border border-purple-700/80 rounded px-1.5 text-white font-bold"
+                      value={discount || ''}
+                      onChange={(e) => setDiscount(parseFloat(e.target.value) || 0)}
+                      placeholder="0.00"
+                      className="w-20 h-7 text-right text-xs bg-purple-900/80 border border-purple-700/80 rounded-lg px-1.5 text-white font-bold"
                     />
                   </div>
                 </div>
 
-                <div className="border-t border-purple-800 pt-2 flex items-center justify-between text-sm font-black">
-                  <span>TOTAL:</span>
+                <div className="border-t border-purple-800/80 pt-2 flex items-center justify-between text-sm font-black">
+                  <span>TOTAL A PAGAR:</span>
                   <span className="text-xl text-amber-300 font-black">
                     {formatCurrency(total, currencySymbol)}
                   </span>
                 </div>
 
-                <div className="flex items-center justify-between gap-3 pt-1 border-t border-purple-800/60">
-                  <span className="text-purple-200">Abono:</span>
-                  <div className="flex items-center gap-1">
-                    <span className="text-purple-300 font-bold">{currencySymbol}</span>
-                    <input
-                      {...register('amount_paid')}
-                      type="number"
-                      step="0.01"
-                      min="0"
-                      className="w-24 h-7 text-right text-xs bg-purple-900/80 border border-purple-700/80 rounded px-2 text-emerald-300 font-black"
-                    />
-                  </div>
-                </div>
+                {/* Si es Pago Parcial -> Campo de Abono */}
+                {paymentStatus === 'parcial' && (
+                  <div className="p-3 bg-white/5 rounded-2xl border border-purple-700/50 space-y-2 mt-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-purple-200 font-bold">Monto del Abono:</span>
+                      <div className="flex items-center gap-1">
+                        <span className="text-purple-300 font-bold">{currencySymbol}</span>
+                        <input
+                          type="number"
+                          step="0.01"
+                          min="0.01"
+                          max={total - 0.01}
+                          value={customAbono}
+                          onChange={(e) => setCustomAbono(e.target.value)}
+                          placeholder="0.00"
+                          className="w-24 h-8 text-right text-xs bg-black/40 border border-purple-500 rounded-lg px-2 text-emerald-300 font-black"
+                          autoFocus
+                          required
+                        />
+                      </div>
+                    </div>
 
-                <div className="flex items-center justify-between font-bold pt-1">
-                  <span className="text-purple-300">Saldo Pendiente:</span>
-                  <span
-                    className={`text-sm font-black ${
-                      balance > 0 ? 'text-rose-300' : 'text-emerald-300'
-                    }`}
-                  >
-                    {formatCurrency(balance, currencySymbol)}
-                  </span>
-                </div>
+                    <div className="flex items-center justify-between text-xs font-bold pt-1 border-t border-purple-800/40">
+                      <span className="text-purple-300">Saldo que quedará pendiente:</span>
+                      <span className="text-rose-300 font-black">
+                        {formatCurrency(balance, currencySymbol)}
+                      </span>
+                    </div>
+                  </div>
+                )}
+
+                {/* Si es Pago Pendiente -> Mostrar Saldo Total */}
+                {paymentStatus === 'pendiente' && (
+                  <div className="flex items-center justify-between font-bold pt-1 text-xs">
+                    <span className="text-purple-300">Saldo Pendiente:</span>
+                    <span className="text-sm font-black text-rose-300">
+                      {formatCurrency(total, currencySymbol)}
+                    </span>
+                  </div>
+                )}
               </div>
 
+              {/* ============================================================
+                  CALCULADORA DE VUELTO EN EFECTIVO (SOLO SI MÉTODO ES EFECTIVO)
+                  ============================================================ */}
+              {isCashMethod && amountToCharge > 0 && (
+                <div className="p-3.5 bg-black/35 rounded-2xl border border-purple-700/60 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-bold text-emerald-300 flex items-center gap-1.5">
+                      <Banknote className="w-4 h-4 text-emerald-400" />
+                      <span>Efectivo Recibido:</span>
+                    </label>
+                    <div className="flex items-center gap-1">
+                      <span className="text-emerald-400 font-bold">{currencySymbol}</span>
+                      <input
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        placeholder="0.00"
+                        value={cashReceived}
+                        onChange={(e) => setCashReceived(e.target.value)}
+                        className="w-28 h-8 text-right text-sm bg-black/50 border border-emerald-500/80 rounded-xl px-2 text-white font-black focus:ring-1 focus:ring-emerald-400"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Botones de Efectivo Rápido */}
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <button
+                      type="button"
+                      onClick={handleSetExactCash}
+                      className="px-2 py-1 rounded-lg text-[10px] font-bold bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 cursor-pointer transition-colors"
+                    >
+                      Exacto
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleAddCash(50)}
+                      className="px-2 py-1 rounded-lg text-[10px] font-bold bg-white/10 hover:bg-white/20 text-purple-200 border border-white/10 cursor-pointer transition-colors"
+                    >
+                      +L50
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleAddCash(100)}
+                      className="px-2 py-1 rounded-lg text-[10px] font-bold bg-white/10 hover:bg-white/20 text-purple-200 border border-white/10 cursor-pointer transition-colors"
+                    >
+                      +L100
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleSetCashBill(500)}
+                      className="px-2 py-1 rounded-lg text-[10px] font-bold bg-white/10 hover:bg-white/20 text-purple-200 border border-white/10 cursor-pointer transition-colors"
+                    >
+                      L500
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleSetCashBill(1000)}
+                      className="px-2 py-1 rounded-lg text-[10px] font-bold bg-white/10 hover:bg-white/20 text-purple-200 border border-white/10 cursor-pointer transition-colors"
+                    >
+                      L1000
+                    </button>
+                  </div>
+
+                  {/* Indicador de Vuelto / Faltante / Pago Exacto */}
+                  {hasCashShortage ? (
+                    <div className="p-2.5 rounded-xl bg-rose-500/20 border border-rose-500/40 text-rose-300 text-xs flex items-center justify-between font-bold">
+                      <span className="flex items-center gap-1.5">
+                        <AlertCircle className="w-4 h-4 text-rose-400" />
+                        <span>Faltante:</span>
+                      </span>
+                      <span className="font-black text-rose-200">
+                        {formatCurrency(Math.abs(cashDifference), currencySymbol)}
+                      </span>
+                    </div>
+                  ) : isExactPayment ? (
+                    <div className="p-2 rounded-xl bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 text-xs flex items-center justify-between font-bold">
+                      <span className="flex items-center gap-1.5">
+                        <CheckCheck className="w-4 h-4 text-emerald-400" />
+                        <span>Pago Exacto</span>
+                      </span>
+                      <span>Vuelto: L 0.00</span>
+                    </div>
+                  ) : hasCashChange ? (
+                    <div className="p-2.5 rounded-xl bg-gradient-to-r from-emerald-600/30 to-teal-600/30 border border-emerald-400/50 text-emerald-200 text-xs flex items-center justify-between font-black">
+                      <span className="uppercase tracking-wider">VUELTO A ENTREGAR:</span>
+                      <span className="text-base text-emerald-300">
+                        {formatCurrency(cashDifference, currencySymbol)}
+                      </span>
+                    </div>
+                  ) : null}
+                </div>
+              )}
+
+              {/* Botón Principal Dinámico de Cobro */}
               <button
                 type="submit"
-                disabled={submitting || items.length === 0}
-                className="w-full py-3.5 px-4 bg-gradient-to-r from-fuchsia-600 via-purple-600 to-indigo-600 hover:from-fuchsia-500 hover:to-indigo-500 text-white rounded-xl text-xs font-black shadow-xl transition-all cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50"
+                disabled={submitting || items.length === 0 || hasCashShortage}
+                className={`w-full py-4 px-4 rounded-2xl text-xs font-black shadow-xl transition-all cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed ${
+                  paymentStatus === 'pagado'
+                    ? 'bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 hover:from-emerald-400 hover:to-teal-500 text-white shadow-emerald-950/40'
+                    : paymentStatus === 'parcial'
+                    ? 'bg-gradient-to-r from-fuchsia-600 via-purple-600 to-indigo-600 hover:from-fuchsia-500 hover:to-indigo-500 text-white'
+                    : 'bg-gradient-to-r from-amber-600 via-orange-600 to-amber-700 hover:from-amber-500 hover:to-orange-500 text-white'
+                }`}
               >
                 <CheckCircle2 className="w-4 h-4" />
-                <span>{submitting ? 'Procesando...' : 'Guardar y Generar Factura'}</span>
+                <span>
+                  {submitting
+                    ? 'Procesando Venta...'
+                    : paymentStatus === 'pagado'
+                    ? `COBRAR ${formatCurrency(total, currencySymbol)} Y GENERAR FACTURA`
+                    : paymentStatus === 'parcial'
+                    ? `REGISTRAR ABONO ${formatCurrency(amountToCharge, currencySymbol)} Y FACTURAR`
+                    : `GUARDAR PEDIDO PENDIENTE (${formatCurrency(total, currencySymbol)})`}
+                </span>
               </button>
             </div>
           </div>

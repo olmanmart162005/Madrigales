@@ -19,6 +19,10 @@ export default function InvoicePreviewModal({ isOpen, onClose, order, items = []
   const emitterName = profile?.full_name || 'Olman Martínez'
   const emitterRole = owner ? 'Propietario' : profile?.role === 'administrador' ? 'Administrador' : 'Cajero'
 
+  const isScheduledOrder = order.order_type === 'programado' || (order.delivery_date && order.delivery_date !== order.order_date)
+  const hasPendingBalance = Number(order.balance) > 0
+  const hasCashDetails = Number(order.cash_received) > 0
+
   const handleDownloadPDF = async () => {
     try {
       await generateOrderPDF(order, items, settings, { name: emitterName, role: emitterRole })
@@ -101,8 +105,12 @@ export default function InvoicePreviewModal({ isOpen, onClose, order, items = []
 
             {/* Número y Estado de Factura */}
             <div className="text-center sm:text-right">
-              <span className="inline-block px-3 py-1 bg-purple-50 border border-purple-200 text-purple-900 rounded-lg text-xs font-bold uppercase tracking-wider mb-1">
-                COMPROBANTE DE VENTA
+              <span className={`inline-block px-3 py-1 rounded-lg text-xs font-black uppercase tracking-wider mb-1 ${
+                isScheduledOrder
+                  ? 'bg-purple-100 text-purple-900 border border-purple-200'
+                  : 'bg-emerald-100 text-emerald-900 border border-emerald-200'
+              }`}>
+                {isScheduledOrder ? 'PEDIDO PROGRAMADO' : 'VENTA INMEDIATA'}
               </span>
               <p className="text-2xl font-black text-purple-900 leading-tight">
                 #{order.order_number}
@@ -127,15 +135,19 @@ export default function InvoicePreviewModal({ isOpen, onClose, order, items = []
             {/* Cliente */}
             <div className="space-y-1 sm:text-right">
               <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
-                Cliente
+                Cliente & Entrega
               </p>
               <p className="font-bold text-gray-900 text-sm">
                 {order.customer_name || 'Consumidor Final'}
               </p>
-              {order.delivery_date && (
-                <p className="text-gray-600">
-                  Entrega: <span className="font-semibold">{formatDate(order.delivery_date)}</span>
+              {isScheduledOrder && order.delivery_date ? (
+                <p className="text-purple-700 font-semibold">
+                  Entrega Programada: {formatDate(order.delivery_date)}
                   {order.delivery_time && ` a las ${formatTime(order.delivery_time)}`}
+                </p>
+              ) : (
+                <p className="text-emerald-700 font-semibold">
+                  Entrega en mostrador
                 </p>
               )}
             </div>
@@ -183,7 +195,7 @@ export default function InvoicePreviewModal({ isOpen, onClose, order, items = []
 
           {/* TOTALES Y OBSERVACIONES */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-2">
-            {/* Observaciones */}
+            {/* Observaciones & Estado */}
             <div className="space-y-3">
               {order.notes && (
                 <div className="p-3.5 bg-gray-50 border border-gray-200 rounded-xl text-xs space-y-1">
@@ -195,10 +207,16 @@ export default function InvoicePreviewModal({ isOpen, onClose, order, items = []
               <div className="text-xs space-y-1 text-gray-500">
                 <p>
                   <span className="font-semibold text-gray-700">Método de pago:</span>{' '}
-                  {order.payment_methods?.name || 'No especificado'}
+                  {order.payment_methods?.name || 'Efectivo'}
                 </p>
                 <p>
-                  <span className="font-semibold text-gray-700">Estado del pedido:</span>{' '}
+                  <span className="font-semibold text-gray-700">Estado financiero:</span>{' '}
+                  <span className={`font-bold ${hasPendingBalance ? 'text-rose-600' : 'text-emerald-700'}`}>
+                    {hasPendingBalance ? (Number(order.amount_paid) > 0 ? 'ABONADO (PARCIAL)' : 'PENDIENTE') : 'PAGADO'}
+                  </span>
+                </p>
+                <p>
+                  <span className="font-semibold text-gray-700">Estado de entrega:</span>{' '}
                   <span className="font-bold uppercase text-purple-800">
                     {order.status?.replace('_', ' ')}
                   </span>
@@ -206,7 +224,7 @@ export default function InvoicePreviewModal({ isOpen, onClose, order, items = []
               </div>
             </div>
 
-            {/* Resumen de Pago */}
+            {/* Resumen de Pago y Vuelto */}
             <div className="p-4 bg-purple-50/50 border border-purple-100 rounded-2xl space-y-2 text-xs">
               <div className="flex justify-between text-gray-600">
                 <span>Subtotal:</span>
@@ -223,22 +241,39 @@ export default function InvoicePreviewModal({ isOpen, onClose, order, items = []
               )}
 
               <div className="border-t border-purple-200 pt-2 flex justify-between text-base font-black text-purple-950">
-                <span>TOTAL:</span>
+                <span>TOTAL A PAGAR:</span>
                 <span>{formatCurrency(order.total, currencySymbol)}</span>
               </div>
 
               <div className="flex justify-between text-gray-700 pt-1">
-                <span>Abono realizado:</span>
+                <span>Total Pagado / Abono:</span>
                 <span className="font-bold text-emerald-700">
                   {formatCurrency(order.amount_paid || 0, currencySymbol)}
                 </span>
               </div>
 
+              {hasCashDetails && (
+                <>
+                  <div className="flex justify-between text-gray-600">
+                    <span>Efectivo Recibido:</span>
+                    <span className="font-bold text-gray-900">
+                      {formatCurrency(order.cash_received, currencySymbol)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-purple-900 font-bold bg-purple-100/70 p-1.5 rounded-lg">
+                    <span>Vuelto Entregado:</span>
+                    <span className="font-black text-purple-950">
+                      {formatCurrency(order.change_returned || 0, currencySymbol)}
+                    </span>
+                  </div>
+                </>
+              )}
+
               <div className="border-t border-purple-200/80 pt-1 flex justify-between font-bold">
-                <span className="text-gray-700">Saldo pendiente:</span>
+                <span className="text-gray-700">Saldo Pendiente:</span>
                 <span
                   className={
-                    Number(order.balance) > 0 ? 'text-rose-600 font-extrabold' : 'text-emerald-700'
+                    hasPendingBalance ? 'text-rose-600 font-extrabold' : 'text-emerald-700'
                   }
                 >
                   {formatCurrency(order.balance || 0, currencySymbol)}

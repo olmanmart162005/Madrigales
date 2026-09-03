@@ -110,6 +110,8 @@ export default function OrderDetailPage() {
       title: `Pago / Abono recibido`,
       amount: Number(p.amount),
       method: p.payment_methods?.name || 'Método no especificado',
+      cashReceived: p.cash_received ? Number(p.cash_received) : null,
+      changeReturned: p.change_returned ? Number(p.change_returned) : null,
       date: p.payment_date || p.created_at,
       notes: p.notes,
     })),
@@ -119,6 +121,8 @@ export default function OrderDetailPage() {
       title: `Ajuste / Descuento aplicado (${a.adjustment_type})`,
       amount: Number(a.amount),
       method: null,
+      cashReceived: null,
+      changeReturned: null,
       date: a.created_at,
       notes: a.reason,
     })),
@@ -334,6 +338,8 @@ export default function OrderDetailPage() {
                     <p className="text-[11px] text-gray-500">
                       {formatDate(mov.date)}
                       {mov.method && ` · Método: ${mov.method}`}
+                      {mov.cashReceived && ` · Recibido: ${formatCurrency(mov.cashReceived, currencySymbol)}`}
+                      {mov.changeReturned !== null && mov.changeReturned !== undefined && ` · Vuelto: ${formatCurrency(mov.changeReturned, currencySymbol)}`}
                       {mov.notes && ` · Nota: "${mov.notes}"`}
                     </p>
                   </div>

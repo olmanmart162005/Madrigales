@@ -85,20 +85,30 @@ export async function generateOrderPDF(order, orderItems = [], settings = {}, em
   doc.setFont('helvetica', 'normal')
   doc.text(`${address} · Tel: ${phone}`, headerTextX, logoY + 16)
 
-  // 4. Bloque derecho: Número de Factura y Fecha de Emisión
+  // 4. Bloque derecho: Número de Factura, Fecha y Tipo de Venta
   doc.setTextColor(...purplePrimary)
   doc.setFontSize(9)
   doc.setFont('helvetica', 'bold')
-  doc.text('FACTURA / COMPROBANTE', pageWidth - margin, logoY + 4, { align: 'right' })
+  doc.text('FACTURA / COMPROBANTE', pageWidth - margin, logoY + 3, { align: 'right' })
 
   doc.setTextColor(...darkText)
   doc.setFontSize(14)
-  doc.text(`#${order.order_number}`, pageWidth - margin, logoY + 10, { align: 'right' })
+  doc.text(`#${order.order_number}`, pageWidth - margin, logoY + 9, { align: 'right' })
 
   doc.setTextColor(...grayText)
-  doc.setFontSize(8)
+  doc.setFontSize(7.5)
   doc.setFont('helvetica', 'normal')
-  doc.text(`Fecha: ${formatDate(order.order_date)}`, pageWidth - margin, logoY + 16, { align: 'right' })
+  doc.text(`Fecha: ${formatDate(order.order_date)}`, pageWidth - margin, logoY + 14, { align: 'right' })
+
+  const isScheduledOrder = order.order_type === 'programado' || (order.delivery_date && order.delivery_date !== order.order_date)
+  doc.setFont('helvetica', 'bold')
+  doc.setTextColor(isScheduledOrder ? 124 : 16, isScheduledOrder ? 58 : 185, isScheduledOrder ? 237 : 129)
+  doc.text(
+    isScheduledOrder ? 'PEDIDO PROGRAMADO' : 'VENTA INMEDIATA',
+    pageWidth - margin,
+    logoY + 18,
+    { align: 'right' }
+  )
 
   // Línea divisoria
   doc.setDrawColor(229, 231, 235)
@@ -140,17 +150,22 @@ export async function generateOrderPDF(order, orderItems = [], settings = {}, em
   doc.setFont('helvetica', 'bold')
   doc.text(order.customer_name || 'Consumidor Final', midX, infoY + 12)
 
-  if (order.delivery_date) {
+  if (isScheduledOrder && order.delivery_date) {
     doc.setTextColor(...grayText)
     doc.setFontSize(7.5)
     doc.setFont('helvetica', 'normal')
-    const deliveryStr = `Entrega: ${formatDate(order.delivery_date)}${
+    const deliveryStr = `Entrega Programada: ${formatDate(order.delivery_date)}${
       order.delivery_time ? ` · ${formatTime(order.delivery_time)}` : ''
     }`
     doc.text(deliveryStr, midX, infoY + 18)
+  } else {
+    doc.setTextColor(16, 185, 129)
+    doc.setFontSize(7.5)
+    doc.setFont('helvetica', 'normal')
+    doc.text('Entrega en mostrador', midX, infoY + 18)
   }
 
-  // 6. Tabla de Productos con Presentaciones
+  // 6. Tabla de Productos con Presentaciones (Snapshot de Precios Históricos)
   const tableData = orderItems.map((item) => {
     const productName = item.variant_name
       ? `${item.product_name}\nPresentación: ${item.variant_name}`
@@ -211,29 +226,42 @@ export async function generateOrderPDF(order, orderItems = [], settings = {}, em
     doc.setTextColor(...grayText)
     doc.setFontSize(8)
     doc.setFont('helvetica', 'normal')
-    const splitNotes = doc.splitTextToSize(order.notes, 90)
-    doc.text(splitNotes, margin, notesY + 5)
-    notesY += 6 + splitNotes.length * 4
+    const splitNotes = doc.splitTextToSize(order.notes, 85)
+    doc.text(splitNotes, margin, notesY + 4)
+    notesY += 5 + splitNotes.length * 4
   }
 
   doc.setTextColor(...grayText)
   doc.setFontSize(7.5)
   doc.setFont('helvetica', 'normal')
   doc.text(`Método de pago: ${order.payment_methods?.name || 'Efectivo'}`, margin, notesY)
-  doc.text(`Estado: ${order.status?.replace('_', ' ').toUpperCase()}`, margin, notesY + 5)
 
-  // Bloque Derecho: Resumen Financiero
-  const totalsBoxX = pageWidth - margin - 75
-  const totalsBoxWidth = 75
+  // Estado de Pago y Entrega
+  const hasPendingBalance = Number(order.balance) > 0
+  const paymentStatusLabel = !hasPendingBalance
+    ? 'PAGADO'
+    : Number(order.amount_paid) > 0
+    ? 'ABONADO (PARCIAL)'
+    : 'PENDIENTE'
+
+  doc.text(`Estado financiero: ${paymentStatusLabel}`, margin, notesY + 4.5)
+  doc.text(`Estado entrega: ${order.status?.replace('_', ' ').toUpperCase()}`, margin, notesY + 9)
+
+  // Bloque Derecho: Resumen Financiero con Vuelto
+  const totalsBoxX = pageWidth - margin - 80
+  const totalsBoxWidth = 80
+  const hasCashDetails = Number(order.cash_received) > 0
+
+  const boxHeight = hasCashDetails ? 48 : 38
 
   doc.setFillColor(250, 247, 249)
-  doc.roundedRect(totalsBoxX, finalY - 2, totalsBoxWidth, 38, 2, 2, 'F')
+  doc.roundedRect(totalsBoxX, finalY - 2, totalsBoxWidth, boxHeight, 2, 2, 'F')
   doc.setDrawColor(237, 233, 254)
-  doc.roundedRect(totalsBoxX, finalY - 2, totalsBoxWidth, 38, 2, 2, 'D')
+  doc.roundedRect(totalsBoxX, finalY - 2, totalsBoxWidth, boxHeight, 2, 2, 'D')
 
-  let tY = finalY + 4
+  let tY = finalY + 3.5
   doc.setTextColor(...grayText)
-  doc.setFontSize(8)
+  doc.setFontSize(7.5)
   doc.setFont('helvetica', 'normal')
   doc.text('Subtotal:', totalsBoxX + 4, tY)
   doc.setFont('helvetica', 'bold')
@@ -241,37 +269,55 @@ export async function generateOrderPDF(order, orderItems = [], settings = {}, em
   doc.text(formatCurrency(order.subtotal, currencySymbol), pageWidth - margin - 4, tY, { align: 'right' })
 
   if (Number(order.discount) > 0) {
-    tY += 5.5
+    tY += 4.5
     doc.setFont('helvetica', 'normal')
     doc.setTextColor(16, 185, 129)
     doc.text('Descuento:', totalsBoxX + 4, tY)
     doc.text(`-${formatCurrency(order.discount, currencySymbol)}`, pageWidth - margin - 4, tY, { align: 'right' })
   }
 
-  tY += 6.5
+  tY += 5.5
   doc.setDrawColor(229, 231, 235)
-  doc.line(totalsBoxX + 4, tY - 1.5, pageWidth - margin - 4, tY - 1.5)
+  doc.line(totalsBoxX + 4, tY - 1, pageWidth - margin - 4, tY - 1)
 
-  doc.setFontSize(10.5)
+  doc.setFontSize(9.5)
   doc.setFont('helvetica', 'bold')
   doc.setTextColor(...purpleDark)
   doc.text('TOTAL:', totalsBoxX + 4, tY + 2)
   doc.text(formatCurrency(order.total, currencySymbol), pageWidth - margin - 4, tY + 2, { align: 'right' })
 
-  tY += 7.5
-  doc.setFontSize(8)
+  tY += 6.5
+  doc.setFontSize(7.5)
   doc.setFont('helvetica', 'normal')
   doc.setTextColor(...grayText)
-  doc.text('Abono:', totalsBoxX + 4, tY)
+  doc.text('Total Pagado / Abono:', totalsBoxX + 4, tY)
   doc.setFont('helvetica', 'bold')
   doc.setTextColor(16, 185, 129)
   doc.text(formatCurrency(order.amount_paid || 0, currencySymbol), pageWidth - margin - 4, tY, { align: 'right' })
 
-  tY += 5.5
+  if (hasCashDetails) {
+    tY += 4.5
+    doc.setFont('helvetica', 'normal')
+    doc.setTextColor(...grayText)
+    doc.text('Efectivo Recibido:', totalsBoxX + 4, tY)
+    doc.setFont('helvetica', 'bold')
+    doc.setTextColor(...darkText)
+    doc.text(formatCurrency(order.cash_received, currencySymbol), pageWidth - margin - 4, tY, { align: 'right' })
+
+    tY += 4.5
+    doc.setFont('helvetica', 'normal')
+    doc.setTextColor(...grayText)
+    doc.text('Vuelto Entregado:', totalsBoxX + 4, tY)
+    doc.setFont('helvetica', 'bold')
+    doc.setTextColor(124, 58, 237)
+    doc.text(formatCurrency(order.change_returned || 0, currencySymbol), pageWidth - margin - 4, tY, { align: 'right' })
+  }
+
+  tY += 5
   doc.setFont('helvetica', 'bold')
   doc.setTextColor(...grayText)
   doc.text('Saldo Pendiente:', totalsBoxX + 4, tY)
-  doc.setTextColor(Number(order.balance) > 0 ? 225 : 16, Number(order.balance) > 0 ? 29 : 185, Number(order.balance) > 0 ? 72 : 129)
+  doc.setTextColor(hasPendingBalance ? 225 : 16, hasPendingBalance ? 29 : 185, hasPendingBalance ? 72 : 129)
   doc.text(formatCurrency(order.balance || 0, currencySymbol), pageWidth - margin - 4, tY, { align: 'right' })
 
   // 8. Pie de Página Institucional
