@@ -96,7 +96,7 @@ export default function LoginForm() {
                 {...register('identifier')}
                 type="text"
                 autoComplete="username"
-                placeholder="Ej. suri, yimi o correo..."
+                placeholder="Ej. nani"
                 className="w-full pl-10 pr-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
               />
             </div>

@@ -58,7 +58,7 @@ export const useAuthStore = create((set, get) => ({
     let cleanIdentifier = identifier.trim().toLowerCase().replace(/\s+/g, '')
     let loginEmail = cleanIdentifier
 
-    // Si ingresó solo el nombre de usuario (ej. suricastellon), convertir a email canónico
+    // Si ingresó solo el nombre de usuario (ej. nani), convertir a email canónico
     if (!cleanIdentifier.includes('@')) {
       loginEmail = `${cleanIdentifier}@madrigales.com`
     }

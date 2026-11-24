@@ -1,5 +1,5 @@
 import React from 'react'
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { useAuthStore } from '@/store/authStore'
 import { PageLoader } from '@/components/ui/Skeleton'
 import AppLayout from '@/components/layout/AppLayout'
@@ -50,9 +50,27 @@ function PublicRoute({ children }) {
   return children
 }
 
+/**
+ * La landing de Nani Cake SIEMPRE es lo primero al abrir la app o la página,
+ * aunque la app instalada o un marcador abran en /login o /panel.
+ * Después, el botón "Administración" lleva al sistema con normalidad.
+ */
+let entryHandled = false
+const ENTRY_PATHS = ['/login', '/panel']
+
+function LandingFirst({ children }) {
+  const location = useLocation()
+  if (!entryHandled) {
+    entryHandled = true
+    if (ENTRY_PATHS.includes(location.pathname)) return <Navigate to="/" replace />
+  }
+  return children
+}
+
 export default function AppRouter() {
   return (
     <BrowserRouter>
+      <LandingFirst>
       <React.Suspense fallback={<PageLoader />}>
         <Routes>
           {/* Público: la página web de Nani Cake es lo primero que se ve */}
@@ -127,6 +145,7 @@ export default function AppRouter() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </React.Suspense>
+      </LandingFirst>
     </BrowserRouter>
   )
 }

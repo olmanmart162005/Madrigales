@@ -169,7 +169,7 @@ export default function UserFormModal({ isOpen, onClose, userToEdit, onSuccess }
             <input
               {...register('full_name')}
               type="text"
-              placeholder="Ej. Suri Castellón"
+              placeholder="Ej. Nani"
               className="input pl-9 text-xs"
             />
           </div>
@@ -189,7 +189,7 @@ export default function UserFormModal({ isOpen, onClose, userToEdit, onSuccess }
               {...register('username')}
               onChange={handleUsernameChange}
               type="text"
-              placeholder="suricastellon"
+              placeholder="nani"
               className="input pl-8 text-xs"
             />
           </div>
