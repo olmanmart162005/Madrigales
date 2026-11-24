@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import {
   Search, Cake, Gift, CalendarDays, Sparkles, MapPin, Phone, Mail, MessageCircle,
   LogIn, LayoutDashboard, Star, X, ShoppingBag, Plus, Minus, Trash2, ChevronDown,
-  Check, ArrowRight, FileText, Loader2,
+  Check, ArrowRight, FileText, Loader2, Download,
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { formatCurrency } from '@/utils'
@@ -49,7 +49,7 @@ function todayISO() {
   return d.toISOString().slice(0, 10)
 }
 
-function buildOrderMessage({ items, total, currency, name, date, notes, folio, pdfUrl }) {
+function buildOrderMessage({ items, total, currency, name, date, notes, folio }) {
   const lines = [`¡Hola Nani Cake! 🎄 Quiero hacer este pedido${folio ? ` (*${folio}*)` : ''}:`, '']
   items.forEach((i) => {
     const label = i.variant ? `${i.name} (${i.variant})` : i.name
@@ -62,7 +62,6 @@ function buildOrderMessage({ items, total, currency, name, date, notes, folio, p
     lines.push(`Fecha deseada: ${d}/${m}/${y}`)
   }
   if (notes) lines.push(`Notas: ${notes}`)
-  if (pdfUrl) lines.push('', '📄 Detalle del pedido en PDF:', pdfUrl)
   lines.push('', '¿Me confirman disponibilidad? ¡Gracias!')
   return lines.join('\n')
 }
@@ -273,63 +272,120 @@ function ProductModal({ product, currency, onClose, onAdd }) {
   )
 }
 
+function canShareFile(file) {
+  try {
+    return !!(navigator.canShare && navigator.share && navigator.canShare({ files: [file] }))
+  } catch {
+    return false
+  }
+}
+
+function downloadFile(file) {
+  const url = URL.createObjectURL(file)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = file.name
+  document.body.appendChild(a)
+  a.click()
+  a.remove()
+  setTimeout(() => URL.revokeObjectURL(url), 4000)
+}
+
 function CartDrawer({ open, onClose, cart, currency, waNumber, business }) {
   const [name, setName] = useState('')
+  const [phone, setPhone] = useState('')
   const [date, setDate] = useState('')
   const [notes, setNotes] = useState('')
+  const [errors, setErrors] = useState({})
   const [sending, setSending] = useState(false)
-  const [sent, setSent] = useState(null)
-  const [nameError, setNameError] = useState(false)
+  const [done, setDone] = useState(null) // { folio, file, saved, summary }
+  const [shareHint, setShareHint] = useState(null)
   useModalBehavior(open, onClose)
 
-  const handleSend = async () => {
-    if (!name.trim()) {
-      setNameError(true)
-      return
-    }
-    // Abrir la pestaña de WhatsApp de inmediato (evita el bloqueo de ventanas emergentes)
-    const waWindow = window.open('', '_blank')
+  const validate = () => {
+    const e = {}
+    if (name.trim().length < 2) e.name = 'Escribe tu nombre.'
+    if (phone.replace(/\D/g, '').length < 8) e.phone = 'Escribe un teléfono / WhatsApp válido.'
+    setErrors(e)
+    return Object.keys(e).length === 0
+  }
+
+  const handleConfirm = async () => {
+    if (!validate()) return
     setSending(true)
     const items = cart.items
     const total = cart.total
-    let folio = null
-    let pdfUrl = null
-    let downloaded = false
+    const customer = { name: name.trim(), phone: phone.trim(), date, notes: notes.trim() }
+    const { generateWebOrderPdf, makeWebOrderFolio } = await import('@/lib/webOrderPdf')
+    const folio = makeWebOrderFolio()
+
+    // 1. Registrar la solicitud en el sistema de Nani Cake (Pedidos Web)
+    const { error: saveError } = await supabase.from('web_orders').insert({
+      folio,
+      customer_name: customer.name.slice(0, 80),
+      customer_phone: customer.phone.slice(0, 25),
+      desired_date: date || null,
+      notes: customer.notes ? customer.notes.slice(0, 600) : null,
+      items: items.map((i) => ({
+        product_id: i.productId || null,
+        variant_id: i.variantId || null,
+        name: i.name,
+        variant: i.variant,
+        qty: i.qty,
+        price: i.price,
+        image: i.image,
+      })),
+      total,
+    })
+    if (saveError) console.error('No se pudo registrar el pedido web:', saveError.message)
+
+    // 2. PDF del pedido (para enviarlo como archivo por WhatsApp)
+    let file = null
     try {
-      const { generateWebOrderPdf, makeWebOrderFolio } = await import('@/lib/webOrderPdf')
-      folio = makeWebOrderFolio()
-      const { blob, doc, fileName } = await generateWebOrderPdf({
-        folio,
-        items,
-        total,
-        currency,
-        customer: { name: name.trim(), date, notes: notes.trim() },
-        business,
-      })
-      // Copia para el cliente
-      doc.save(fileName)
-      downloaded = true
-      // Copia en línea para Nani Cake (el enlace va en el mensaje)
-      const unique = (window.crypto?.randomUUID?.() || String(Date.now())).slice(0, 8)
-      const path = `pedidos/${fileName.replace('.pdf', '')}-${unique}.pdf`
-      const { error } = await supabase.storage
-        .from('pedidos-web')
-        .upload(path, blob, { contentType: 'application/pdf', upsert: false })
-      if (!error) pdfUrl = supabase.storage.from('pedidos-web').getPublicUrl(path).data.publicUrl
-      else console.warn('No se pudo subir el PDF del pedido:', error.message)
+      const { blob, fileName } = await generateWebOrderPdf({ folio, items, total, currency, customer, business })
+      file = new File([blob], fileName, { type: 'application/pdf' })
     } catch (err) {
       console.error('Error generando PDF del pedido:', err)
     }
 
-    const link = waLink(
-      waNumber,
-      buildOrderMessage({ items, total, currency, name: name.trim(), date, notes: notes.trim(), folio, pdfUrl })
-    )
-    if (waWindow && !waWindow.closed) waWindow.location.href = link
-    else window.location.href = link
     setSending(false)
-    setSent({ folio, downloaded })
+    setDone({
+      folio,
+      file,
+      saved: !saveError,
+      summary: buildOrderMessage({ items, total, currency, name: customer.name, date, notes: customer.notes, folio }),
+    })
   }
+
+  const sharePdf = async () => {
+    if (!done?.file) return
+    const text = `¡Hola Nani Cake! 🎄 Te envío el PDF de mi pedido ${done.folio}.`
+    if (canShareFile(done.file)) {
+      try {
+        await navigator.share({ files: [done.file], title: `Pedido ${done.folio}`, text })
+        setShareHint(null)
+        return
+      } catch (err) {
+        if (err?.name === 'AbortError') return
+      }
+    }
+    // Navegador sin "compartir archivos" (p. ej. algunas PC): descargar + abrir chat para adjuntarlo
+    downloadFile(done.file)
+    const link = waLink(waNumber, `${text}\n\n(Te lo adjunto en este chat 📎)`)
+    if (link) window.open(link, '_blank', 'noopener')
+    setShareHint('Se descargó el PDF. En el chat de WhatsApp toca 📎 Adjuntar → Documento y elige el archivo.')
+  }
+
+  const reset = () => {
+    cart.clear()
+    setDone(null)
+    setShareHint(null)
+    setNotes('')
+    setDate('')
+    onClose()
+  }
+
+  const field = (key) => (errors[key] ? 'border-red-400 ring-2 ring-red-200' : '')
 
   return (
     <div className={`fixed inset-0 z-[70] ${open ? '' : 'pointer-events-none'}`} aria-hidden={!open}>
@@ -340,7 +396,7 @@ function CartDrawer({ open, onClose, cart, currency, waNumber, business }) {
         aria-label="Mi pedido"
         className={`absolute right-0 top-0 h-full w-full max-w-md bg-cream-50 shadow-2xl flex flex-col transition-transform duration-300 ${open ? 'translate-x-0' : 'translate-x-full'}`}
       >
-        <div className="flex items-center justify-between px-5 h-16 bg-white border-b border-purple-100">
+        <div className="flex items-center justify-between px-5 h-16 bg-white border-b border-purple-100 flex-shrink-0">
           <h2 className="flex items-center gap-2 font-serif text-xl font-bold text-gray-900">
             <ShoppingBag className="w-5 h-5 text-purple-600" /> Mi pedido
           </h2>
@@ -349,7 +405,66 @@ function CartDrawer({ open, onClose, cart, currency, waNumber, business }) {
           </button>
         </div>
 
-        {cart.items.length === 0 ? (
+        {done ? (
+          /* ---------------- PEDIDO ENVIADO ---------------- */
+          <div className="flex-1 overflow-y-auto p-6 flex flex-col">
+            <div className="text-center">
+              <div className={`w-20 h-20 mx-auto rounded-full flex items-center justify-center ${done.saved ? 'bg-pine-50' : 'bg-gold-50'}`}>
+                <Check className={`w-10 h-10 ${done.saved ? 'text-pine-600' : 'text-gold-600'}`} />
+              </div>
+              <h3 className="mt-4 font-serif text-2xl font-bold text-gray-900">
+                {done.saved ? '¡Pedido recibido!' : '¡Tu pedido está listo!'}
+              </h3>
+              <p className="mt-1 text-sm font-bold text-purple-700">{done.folio}</p>
+              <p className="mt-3 text-sm text-gray-600">
+                {done.saved
+                  ? 'Nani Cake ya tiene tu pedido en su sistema y te confirmará por WhatsApp la disponibilidad y el total.'
+                  : 'Envíanos el PDF por WhatsApp para recibir tu pedido.'}
+              </p>
+            </div>
+
+            <div className="mt-6 space-y-3">
+              {done.file && (
+                <button
+                  type="button"
+                  onClick={sharePdf}
+                  className="w-full inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-full bg-[#25D366] hover:bg-[#1fb457] text-white font-bold shadow-md transition-colors"
+                >
+                  <FileText className="w-5 h-5" /> Enviar PDF por WhatsApp
+                </button>
+              )}
+              <p className="text-[11px] text-center text-gray-500 leading-snug">
+                Se abrirá el menú para compartir: elige <b>WhatsApp</b> y el chat de <b>Nani Cake ({business?.whatsapp || LANDING.whatsapp})</b>.
+              </p>
+              {shareHint && (
+                <p className="text-xs text-pine-900 bg-pine-50 border border-pine-200 rounded-xl p-3" role="status">{shareHint}</p>
+              )}
+              {done.file && (
+                <button
+                  type="button"
+                  onClick={() => downloadFile(done.file)}
+                  className="w-full inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-white border border-purple-200 text-purple-700 font-bold hover:bg-purple-50"
+                >
+                  <Download className="w-4 h-4" /> Descargar mi PDF
+                </button>
+              )}
+              {waLink(waNumber, done.summary) && (
+                <a
+                  href={waLink(waNumber, done.summary)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-white border border-pine-200 text-pine-700 font-bold hover:bg-pine-50"
+                >
+                  <MessageCircle className="w-4 h-4" /> Abrir chat de Nani Cake
+                </a>
+              )}
+            </div>
+
+            <button type="button" onClick={reset} className="mt-auto pt-6 text-sm font-bold text-gray-500 hover:text-purple-700">
+              Hacer un nuevo pedido
+            </button>
+          </div>
+        ) : cart.items.length === 0 ? (
           <div className="flex-1 flex flex-col items-center justify-center text-center px-8">
             <div className="w-20 h-20 rounded-full bg-purple-50 flex items-center justify-center">
               <ShoppingBag className="w-9 h-9 text-purple-300" />
@@ -392,16 +507,27 @@ function CartDrawer({ open, onClose, cart, currency, waNumber, business }) {
                   <span className="label">Tu nombre *</span>
                   <input
                     value={name}
-                    onChange={(e) => {
-                      setName(e.target.value)
-                      setNameError(false)
-                    }}
-                    className={`input ${nameError ? 'border-red-400 ring-2 ring-red-200' : ''}`}
+                    onChange={(e) => { setName(e.target.value); setErrors((x) => ({ ...x, name: null })) }}
+                    className={`input ${field('name')}`}
                     placeholder="¿A nombre de quién?"
                     autoComplete="name"
-                    aria-invalid={nameError}
+                    aria-invalid={!!errors.name}
                   />
-                  {nameError && <span className="text-xs text-red-600 mt-1 block">Escribe tu nombre para el pedido.</span>}
+                  {errors.name && <span className="text-xs text-red-600 mt-1 block">{errors.name}</span>}
+                </label>
+                <label className="block">
+                  <span className="label">Tu teléfono / WhatsApp *</span>
+                  <input
+                    value={phone}
+                    onChange={(e) => { setPhone(e.target.value); setErrors((x) => ({ ...x, phone: null })) }}
+                    className={`input ${field('phone')}`}
+                    placeholder="Ej. 9999-9999"
+                    type="tel"
+                    inputMode="tel"
+                    autoComplete="tel"
+                    aria-invalid={!!errors.phone}
+                  />
+                  {errors.phone && <span className="text-xs text-red-600 mt-1 block">{errors.phone}</span>}
                 </label>
                 <label className="block">
                   <span className="label">Fecha deseada de entrega</span>
@@ -409,46 +535,27 @@ function CartDrawer({ open, onClose, cart, currency, waNumber, business }) {
                 </label>
                 <label className="block">
                   <span className="label">Notas o personalización</span>
-                  <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} className="input resize-none" placeholder="Ej. Dedicatoria, sabor, decoración..." />
+                  <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} maxLength={600} className="input resize-none" placeholder="Ej. Dedicatoria, sabor, decoración..." />
                 </label>
               </div>
             </div>
 
-            <div className="p-5 bg-white border-t border-purple-100 space-y-3">
+            <div className="p-5 bg-white border-t border-purple-100 space-y-3 flex-shrink-0">
               <div className="flex items-center justify-between">
                 <span className="text-sm font-semibold text-gray-600">Total estimado</span>
                 <span className="text-2xl font-extrabold text-gray-900">{formatCurrency(cart.total, currency)}</span>
               </div>
-              {sent && (
-                <div className="rounded-2xl bg-pine-50 border border-pine-200 p-3 text-xs text-pine-900 space-y-1" role="status">
-                  <p className="font-bold flex items-center gap-1.5">
-                    <Check className="w-4 h-4" /> ¡Pedido {sent.folio || ''} preparado!
-                  </p>
-                  <p>{sent.downloaded ? 'Se descargó tu PDF con el detalle. ' : ''}Termina de enviarlo en WhatsApp.</p>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      cart.clear()
-                      setSent(null)
-                      onClose()
-                    }}
-                    className="font-bold underline"
-                  >
-                    Ya lo envié · vaciar pedido
-                  </button>
-                </div>
-              )}
               <button
                 type="button"
-                onClick={handleSend}
-                disabled={sending || !waNumber}
-                className="w-full inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-full bg-pine-600 hover:bg-pine-700 disabled:opacity-60 text-white font-bold shadow-md transition-colors"
+                onClick={handleConfirm}
+                disabled={sending}
+                className="w-full inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-full bg-purple-600 hover:bg-purple-700 disabled:opacity-60 text-white font-bold shadow-md transition-colors"
               >
-                {sending ? <Loader2 className="w-5 h-5 animate-spin" /> : <MessageCircle className="w-5 h-5" />}
-                {sending ? 'Preparando tu PDF...' : 'Enviar pedido por WhatsApp'}
+                {sending ? <Loader2 className="w-5 h-5 animate-spin" /> : <Check className="w-5 h-5" />}
+                {sending ? 'Enviando tu pedido...' : 'Confirmar pedido'}
               </button>
               <p className="flex items-center justify-center gap-1.5 text-[11px] text-gray-500">
-                <FileText className="w-3.5 h-3.5" /> Incluye un PDF detallado de tu pedido
+                <FileText className="w-3.5 h-3.5" /> Recibirás un PDF detallado para enviarlo por WhatsApp
               </p>
               <button type="button" onClick={cart.clear} className="w-full text-xs font-semibold text-gray-400 hover:text-red-500">
                 Vaciar pedido

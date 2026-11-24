@@ -142,7 +142,7 @@ export async function generateWebOrderPdf({ folio, items, total, currency = 'L',
     doc.text(doc.splitTextToSize(value, w), x, yy + 5.5)
   }
   const colW = (W - M * 2 - 12) / 2
-  col('CLIENTE', customer.name || 'Cliente', M + 6, y + 8, colW)
+  col('CLIENTE', [customer.name || 'Cliente', customer.phone && `Tel. ${customer.phone}`].filter(Boolean).join('  ·  '), M + 6, y + 8, colW)
   col('FECHA DESEADA DE ENTREGA', formatDateES(customer.date), M + 6 + colW, y + 8, colW)
   if (customer.notes) {
     doc.setFont('helvetica', 'bold')

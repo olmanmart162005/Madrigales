@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { useLocation, useNavigate, Link } from 'react-router-dom'
-import { Menu, User, LogOut, Settings, Crown, Download } from 'lucide-react'
+import { Menu, User, LogOut, Settings, Crown, Download, Bell } from 'lucide-react'
 import { useAuthStore } from '@/store/authStore'
+import { useWebOrdersStore } from '@/store/webOrdersStore'
 import { getInitials } from '@/utils'
 import toast from 'react-hot-toast'
 
@@ -9,6 +10,7 @@ const PAGE_NAMES = {
   '/panel': 'Dashboard',
   '/pedidos': 'Pedidos & Facturación',
   '/pedidos/nuevo': 'Nuevo Pedido',
+  '/pedidos-web': 'Pedidos Web',
   '/calendario': 'Calendario de Entregas',
   '/productos': 'Catálogo de Productos',
   '/almacen': 'Almacén & Materias Primas',
@@ -26,6 +28,7 @@ function getPageTitle(pathname) {
 
 export default function Header({ onToggleSidebar }) {
   const { profile, signOut, isOwner } = useAuthStore()
+  const webUnseen = useWebOrdersStore((st) => st.unseen)
   const location = useLocation()
   const navigate = useNavigate()
   const [dropdownOpen, setDropdownOpen] = useState(false)
@@ -157,6 +160,21 @@ export default function Header({ onToggleSidebar }) {
             <span className="hidden sm:inline">Instalar App</span>
           </button>
         )}
+
+        {/* Notificaciones de pedidos web */}
+        <Link
+          to="/pedidos-web"
+          className="relative p-2 rounded-xl hover:bg-purple-50 text-gray-600 hover:text-purple-700 transition-colors"
+          title={webUnseen > 0 ? `${webUnseen} pedidos web nuevos` : 'Pedidos web'}
+          aria-label={webUnseen > 0 ? `${webUnseen} pedidos web nuevos` : 'Pedidos web'}
+        >
+          <Bell className={`w-5 h-5 ${webUnseen > 0 ? 'text-purple-600' : ''}`} />
+          {webUnseen > 0 && (
+            <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 rounded-full bg-red-600 text-white text-[10px] font-extrabold flex items-center justify-center ring-2 ring-white">
+              {webUnseen > 9 ? '9+' : webUnseen}
+            </span>
+          )}
+        </Link>
 
         {/* Dropdown de usuario */}
         <div className="relative" ref={dropdownRef}>

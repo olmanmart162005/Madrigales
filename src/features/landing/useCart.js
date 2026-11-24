@@ -35,6 +35,7 @@ export function useCart() {
           key,
           productId: product.id,
           name: product.name,
+          variantId: variant?.id || null,
           variant: variant?.name || null,
           price: Number(variant ? variant.price : product.price) || 0,
           image: product.image_url || null,

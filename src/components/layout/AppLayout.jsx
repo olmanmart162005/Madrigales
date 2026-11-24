@@ -4,6 +4,7 @@ import Sidebar from './Sidebar'
 import Header from './Header'
 import PWAInstallPrompt from '@/components/ui/PWAInstallPrompt'
 import { useSettingsStore } from '@/store/settingsStore'
+import { useWebOrdersStore } from '@/store/webOrdersStore'
 
 export default function AppLayout() {
   const [mobileOpen, setMobileOpen] = useState(false)
@@ -11,6 +12,10 @@ export default function AppLayout() {
 
   useEffect(() => {
     fetchSettings()
+    // Notificaciones de pedidos web en tiempo real
+    const { start, stop } = useWebOrdersStore.getState()
+    start()
+    return () => stop()
   }, [])
 
   const handleMobileToggle = () => setMobileOpen((v) => !v)

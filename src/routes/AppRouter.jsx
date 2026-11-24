@@ -18,6 +18,7 @@ const UsersPage       = React.lazy(() => import('@/features/users/UsersPage'))
 const ProfilePage     = React.lazy(() => import('@/features/profile/ProfilePage'))
 const SettingsPage    = React.lazy(() => import('@/features/settings/SettingsPage'))
 const LandingPage     = React.lazy(() => import('@/features/landing/LandingPage'))
+const WebOrdersPage   = React.lazy(() => import('@/features/webOrders/WebOrdersPage'))
 
 function ProtectedRoute({ children, adminOnly = false, ownerOnly = false }) {
   const { user, profile, loading, isAdmin, isOwner, isActive } = useAuthStore()
@@ -95,6 +96,7 @@ export default function AppRouter() {
           >
             <Route path="panel" element={<DashboardPage />} />
             <Route path="pedidos" element={<OrdersPage />} />
+            <Route path="pedidos-web" element={<WebOrdersPage />} />
             <Route path="pedidos/nuevo" element={<NewOrderPage />} />
             <Route path="pedidos/:id" element={<OrderDetailPage />} />
             <Route

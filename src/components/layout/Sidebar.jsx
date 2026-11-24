@@ -3,9 +3,10 @@ import { NavLink, useNavigate, Link } from 'react-router-dom'
 import {
   LayoutDashboard, ShoppingBag, Calendar, Package, Warehouse,
   BarChart3, Users, User, Settings,
-  LogOut, X, Crown, Globe, ChevronRight as RightArrow
+  LogOut, X, Crown, Globe, Inbox, ChevronRight as RightArrow
 } from 'lucide-react'
 import { useAuthStore } from '@/store/authStore'
+import { useWebOrdersStore } from '@/store/webOrdersStore'
 import { getInitials } from '@/utils'
 import toast from 'react-hot-toast'
 
@@ -13,6 +14,7 @@ import toast from 'react-hot-toast'
 const allNavItems = [
   { to: '/panel', icon: LayoutDashboard, label: 'Dashboard', exact: true, cashier: true },
   { to: '/pedidos', icon: ShoppingBag, label: 'Pedidos', cashier: true },
+  { to: '/pedidos-web', icon: Inbox, label: 'Pedidos Web', cashier: true, badge: true },
   { to: '/productos', icon: Package, label: 'Productos', cashier: true },
   { to: '/calendario', icon: Calendar, label: 'Calendario', cashier: false },
   { to: '/almacen', icon: Warehouse, label: 'Almacén', cashier: false },
@@ -33,6 +35,8 @@ const accountNavItems = [
 
 export default function Sidebar({ mobileOpen, onMobileClose }) {
   const { profile, signOut, isAdmin, isOwner } = useAuthStore()
+  const webUnseen = useWebOrdersStore((st) => st.unseen)
+  const webPending = useWebOrdersStore((st) => st.pending)
   const navigate = useNavigate()
 
   const handleSignOut = async () => {
@@ -155,6 +159,18 @@ export default function Sidebar({ mobileOpen, onMobileClose }) {
                 <>
                   <item.icon className={`w-5 h-5 flex-shrink-0 transition-transform duration-200 group-hover:scale-110 ${isActive ? 'text-white' : 'text-slate-500 group-hover:text-purple-600'}`} />
                   <span className="truncate flex-1 tracking-tight">{item.label}</span>
+                  {item.badge && (webUnseen > 0 || webPending > 0) && (
+                    <span
+                      className={`min-w-[22px] h-[22px] px-1.5 rounded-full text-[11px] font-extrabold flex items-center justify-center ${
+                        webUnseen > 0
+                          ? 'bg-red-600 text-white ring-2 ring-white animate-pulse'
+                          : isActive ? 'bg-white/25 text-white' : 'bg-purple-100 text-purple-700'
+                      }`}
+                      aria-label={webUnseen > 0 ? `${webUnseen} pedidos web nuevos` : `${webPending} por confirmar`}
+                    >
+                      {webUnseen > 0 ? webUnseen : webPending}
+                    </span>
+                  )}
                   <RightArrow className={`w-4 h-4 flex-shrink-0 transition-transform duration-200 group-hover:translate-x-0.5 ${isActive ? 'text-white/90' : 'text-slate-300 group-hover:text-purple-500'}`} />
                 </>
               )}
@@ -187,6 +203,18 @@ export default function Sidebar({ mobileOpen, onMobileClose }) {
                     <>
                       <item.icon className={`w-5 h-5 flex-shrink-0 transition-transform duration-200 group-hover:scale-110 ${isActive ? 'text-white' : 'text-slate-500 group-hover:text-purple-600'}`} />
                       <span className="truncate flex-1 tracking-tight">{item.label}</span>
+                  {item.badge && (webUnseen > 0 || webPending > 0) && (
+                    <span
+                      className={`min-w-[22px] h-[22px] px-1.5 rounded-full text-[11px] font-extrabold flex items-center justify-center ${
+                        webUnseen > 0
+                          ? 'bg-red-600 text-white ring-2 ring-white animate-pulse'
+                          : isActive ? 'bg-white/25 text-white' : 'bg-purple-100 text-purple-700'
+                      }`}
+                      aria-label={webUnseen > 0 ? `${webUnseen} pedidos web nuevos` : `${webPending} por confirmar`}
+                    >
+                      {webUnseen > 0 ? webUnseen : webPending}
+                    </span>
+                  )}
                       <RightArrow className={`w-4 h-4 flex-shrink-0 transition-transform duration-200 group-hover:translate-x-0.5 ${isActive ? 'text-white/90' : 'text-slate-300 group-hover:text-purple-500'}`} />
                     </>
                   )}
@@ -218,6 +246,18 @@ export default function Sidebar({ mobileOpen, onMobileClose }) {
                 <>
                   <item.icon className={`w-5 h-5 flex-shrink-0 transition-transform duration-200 group-hover:scale-110 ${isActive ? 'text-white' : 'text-slate-500 group-hover:text-purple-600'}`} />
                   <span className="truncate flex-1 tracking-tight">{item.label}</span>
+                  {item.badge && (webUnseen > 0 || webPending > 0) && (
+                    <span
+                      className={`min-w-[22px] h-[22px] px-1.5 rounded-full text-[11px] font-extrabold flex items-center justify-center ${
+                        webUnseen > 0
+                          ? 'bg-red-600 text-white ring-2 ring-white animate-pulse'
+                          : isActive ? 'bg-white/25 text-white' : 'bg-purple-100 text-purple-700'
+                      }`}
+                      aria-label={webUnseen > 0 ? `${webUnseen} pedidos web nuevos` : `${webPending} por confirmar`}
+                    >
+                      {webUnseen > 0 ? webUnseen : webPending}
+                    </span>
+                  )}
                   <RightArrow className={`w-4 h-4 flex-shrink-0 transition-transform duration-200 group-hover:translate-x-0.5 ${isActive ? 'text-white/90' : 'text-slate-300 group-hover:text-purple-500'}`} />
                 </>
               )}
@@ -298,6 +338,18 @@ export default function Sidebar({ mobileOpen, onMobileClose }) {
                 <>
                   <item.icon className={`w-5 h-5 flex-shrink-0 ${isActive ? 'text-white' : 'text-slate-500'}`} />
                   <span className="flex-1 font-medium">{item.label}</span>
+                  {item.badge && (webUnseen > 0 || webPending > 0) && (
+                    <span
+                      className={`min-w-[22px] h-[22px] px-1.5 rounded-full text-[11px] font-extrabold flex items-center justify-center ${
+                        webUnseen > 0
+                          ? 'bg-red-600 text-white ring-2 ring-white animate-pulse'
+                          : isActive ? 'bg-white/25 text-white' : 'bg-purple-100 text-purple-700'
+                      }`}
+                      aria-label={webUnseen > 0 ? `${webUnseen} pedidos web nuevos` : `${webPending} por confirmar`}
+                    >
+                      {webUnseen > 0 ? webUnseen : webPending}
+                    </span>
+                  )}
                   {isActive && <RightArrow className="w-4 h-4 text-white/80 flex-shrink-0" />}
                 </>
               )}
@@ -331,6 +383,18 @@ export default function Sidebar({ mobileOpen, onMobileClose }) {
                     <>
                       <item.icon className={`w-5 h-5 flex-shrink-0 ${isActive ? 'text-white' : 'text-slate-500'}`} />
                       <span className="flex-1 font-medium">{item.label}</span>
+                  {item.badge && (webUnseen > 0 || webPending > 0) && (
+                    <span
+                      className={`min-w-[22px] h-[22px] px-1.5 rounded-full text-[11px] font-extrabold flex items-center justify-center ${
+                        webUnseen > 0
+                          ? 'bg-red-600 text-white ring-2 ring-white animate-pulse'
+                          : isActive ? 'bg-white/25 text-white' : 'bg-purple-100 text-purple-700'
+                      }`}
+                      aria-label={webUnseen > 0 ? `${webUnseen} pedidos web nuevos` : `${webPending} por confirmar`}
+                    >
+                      {webUnseen > 0 ? webUnseen : webPending}
+                    </span>
+                  )}
                       {isActive && <RightArrow className="w-4 h-4 text-white/80 flex-shrink-0" />}
                     </>
                   )}
@@ -362,6 +426,18 @@ export default function Sidebar({ mobileOpen, onMobileClose }) {
                 <>
                   <item.icon className={`w-5 h-5 flex-shrink-0 ${isActive ? 'text-white' : 'text-slate-500'}`} />
                   <span className="flex-1 font-medium">{item.label}</span>
+                  {item.badge && (webUnseen > 0 || webPending > 0) && (
+                    <span
+                      className={`min-w-[22px] h-[22px] px-1.5 rounded-full text-[11px] font-extrabold flex items-center justify-center ${
+                        webUnseen > 0
+                          ? 'bg-red-600 text-white ring-2 ring-white animate-pulse'
+                          : isActive ? 'bg-white/25 text-white' : 'bg-purple-100 text-purple-700'
+                      }`}
+                      aria-label={webUnseen > 0 ? `${webUnseen} pedidos web nuevos` : `${webPending} por confirmar`}
+                    >
+                      {webUnseen > 0 ? webUnseen : webPending}
+                    </span>
+                  )}
                   {isActive && <RightArrow className="w-4 h-4 text-white/80 flex-shrink-0" />}
                 </>
               )}
