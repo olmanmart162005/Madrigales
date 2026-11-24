@@ -1,5 +1,5 @@
 /**
- * Estilos y constantes de animación para Madrigales Pastelería
+ * Estilos y constantes de animación para Nani Cake
  * Acelerados por hardware (GPU)
  */
 
@@ -9,7 +9,7 @@ export const luxuryColors = {
   surface: 'rgba(42, 23, 53, 0.85)',
   primary: '#C45A7A',
   primaryLight: '#E7829E',
-  secondary: '#8B5CF6',
+  secondary: '#C8102E',
   gold: '#D9A86C',
   goldLight: '#F0C78D',
   textPrimary: '#F8F3F5',

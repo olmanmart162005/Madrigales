@@ -95,7 +95,7 @@ export default function CalendarPage() {
               {format(currentMonth, 'MMMM yyyy', { locale: es })}
             </h1>
             <p className="text-xs text-gray-400">
-              Calendario de Entregas &middot; Madrigales Pastelería
+              Calendario de Entregas &middot; Nani Cake
             </p>
           </div>
         </div>

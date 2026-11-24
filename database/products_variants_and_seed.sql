@@ -1,5 +1,5 @@
 -- ============================================================
--- MADRIGALES PASTELERÍA: TABLA DE VARIANTES Y DATOS DE PRUEBA
+-- NANI CAKE: TABLA DE VARIANTES Y DATOS DE PRUEBA
 -- (100% DINÁMICO Y A PRUEBA DE CONSTRAINTS)
 -- ============================================================
 

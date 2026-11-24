@@ -33,7 +33,7 @@ export default function LoginForm() {
     try {
       setSubmitting(true)
       await signIn(values.identifier, values.password)
-      toast.success('¡Bienvenido a Madrigales Pastelería!')
+      toast.success('¡Bienvenido a Nani Cake!')
     } catch (err) {
       console.error('Login error:', err)
       if (err.message?.includes('desactivada')) {
@@ -47,15 +47,15 @@ export default function LoginForm() {
   }
 
   return (
-    <div className="w-full lg:w-1/2 p-6 sm:p-10 md:p-12 flex flex-col justify-center bg-[#0D1420] text-white">
+    <div className="w-full lg:w-1/2 p-6 sm:p-10 md:p-12 flex flex-col justify-center bg-[#0C2418] text-white">
       <div className="max-w-md w-full mx-auto space-y-6">
         {/* Encabezado con Logo Oficial con Fondo Blanco Elegante */}
         <div className="space-y-3 text-center">
           <div className="flex justify-center">
-            <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-3xl bg-white p-2.5 shadow-2xl border border-white/20 flex items-center justify-center">
+            <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-white p-0.5 shadow-2xl border-4 border-gold-400/60 flex items-center justify-center overflow-hidden">
               <img
                 src="/LOGO_OFICIAL_BLANCO.png"
-                alt="Madrigales Pastelería"
+                alt="Nani Cake"
                 className="w-full h-full object-contain"
               />
             </div>
@@ -65,7 +65,7 @@ export default function LoginForm() {
             <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white font-sans">
               Iniciar Sesión
             </h2>
-            <p className="text-xs font-bold text-fuchsia-400 uppercase tracking-[0.25em] mt-1">
+            <p className="text-xs font-bold text-gold-300 uppercase tracking-[0.25em] mt-1">
               SISTEMA DE GESTIÓN & POS
             </p>
           </div>
@@ -143,7 +143,7 @@ export default function LoginForm() {
 
         <div className="pt-2 text-center">
           <p className="text-[11px] text-slate-500">
-            Madrigales Pastelería &copy; 2026 &middot; Sistema de Gestión y POS
+            Nani Cake &copy; 2026 &middot; Sistema de Gestión y POS
           </p>
         </div>
       </div>

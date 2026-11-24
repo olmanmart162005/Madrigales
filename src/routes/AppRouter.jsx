@@ -1,5 +1,5 @@
 import React from 'react'
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { useAuthStore } from '@/store/authStore'
 import { PageLoader } from '@/components/ui/Skeleton'
 import AppLayout from '@/components/layout/AppLayout'
@@ -17,6 +17,7 @@ const ReportsPage     = React.lazy(() => import('@/features/reports/ReportsPage'
 const UsersPage       = React.lazy(() => import('@/features/users/UsersPage'))
 const ProfilePage     = React.lazy(() => import('@/features/profile/ProfilePage'))
 const SettingsPage    = React.lazy(() => import('@/features/settings/SettingsPage'))
+const LandingPage     = React.lazy(() => import('@/features/landing/LandingPage'))
 
 function ProtectedRoute({ children, adminOnly = false, ownerOnly = false }) {
   const { user, profile, loading, isAdmin, isOwner, isActive } = useAuthStore()
@@ -49,12 +50,28 @@ function PublicRoute({ children }) {
   return children
 }
 
+/**
+ * En "/" los visitantes sin sesión ven la landing pública de Nani Cake;
+ * el personal con sesión ve el sistema (Dashboard).
+ */
+function RootGate() {
+  const { user, loading } = useAuthStore()
+  const location = useLocation()
+  if (!loading && !user && location.pathname === '/') return <LandingPage />
+  return (
+    <ProtectedRoute>
+      <AppLayout />
+    </ProtectedRoute>
+  )
+}
+
 export default function AppRouter() {
   return (
     <BrowserRouter>
       <React.Suspense fallback={<PageLoader />}>
         <Routes>
           {/* Public */}
+          <Route path="/catalogo" element={<LandingPage />} />
           <Route
             path="/login"
             element={
@@ -65,13 +82,7 @@ export default function AppRouter() {
           />
 
           {/* Protected */}
-          <Route
-            element={
-              <ProtectedRoute>
-                <AppLayout />
-              </ProtectedRoute>
-            }
-          >
+          <Route element={<RootGate />}>
             <Route index element={<DashboardPage />} />
             <Route path="pedidos" element={<OrdersPage />} />
             <Route path="pedidos/nuevo" element={<NewOrderPage />} />

@@ -84,20 +84,20 @@ export default function Sidebar({ mobileOpen, onMobileClose }) {
       <aside className="hidden lg:flex flex-col fixed left-0 top-0 h-screen w-[260px] bg-white border-r border-gray-100/90 shadow-sm z-30 select-none">
         {/* Branding Superior */}
         <div className="p-4 sm:p-5 border-b border-gray-100/90 flex items-center gap-3.5">
-          <div className="w-11 h-11 rounded-2xl bg-white border border-purple-100 shadow-sm p-1 flex items-center justify-center flex-shrink-0 overflow-hidden">
+          <div className="w-11 h-11 rounded-full bg-white border-2 border-purple-100 shadow-sm flex items-center justify-center flex-shrink-0 overflow-hidden">
             <img
               src="/LOGO_OFICIAL_BLANCO.png"
-              alt="Madrigales"
+              alt="Nani Cake"
               className="w-full h-full object-contain"
             />
           </div>
 
           <div className="overflow-hidden">
-            <h1 className="text-base font-extrabold text-gray-900 tracking-tight leading-tight truncate font-sans">
-              Madrigales
+            <h1 className="font-script text-2xl font-bold text-purple-700 leading-none truncate">
+              Nani Cake
             </h1>
-            <p className="text-[10px] font-bold tracking-[0.25em] text-fuchsia-600 uppercase leading-tight mt-0.5 truncate">
-              PASTELERÍA
+            <p className="text-[10px] font-bold tracking-[0.25em] text-pine-600 uppercase leading-tight mt-1 truncate">
+              🎄 PASTELERÍA
             </p>
           </div>
         </div>
@@ -145,7 +145,7 @@ export default function Sidebar({ mobileOpen, onMobileClose }) {
               className={({ isActive }) =>
                 `flex items-center gap-3.5 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 group relative ${
                   isActive
-                    ? 'bg-gradient-to-r from-[#7C3AED] via-[#A855F7] to-[#C026D3] text-white shadow-[0_8px_20px_rgba(124,58,237,0.22)]'
+                    ? 'bg-gradient-to-r from-[#C8102E] via-[#E63946] to-[#A50E27] text-white shadow-[0_8px_20px_rgba(200,16,46,0.22)]'
                     : 'text-slate-600 hover:bg-purple-500/8 hover:text-purple-700'
                 }`
               }
@@ -176,7 +176,7 @@ export default function Sidebar({ mobileOpen, onMobileClose }) {
                   className={({ isActive }) =>
                     `flex items-center gap-3.5 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 group relative ${
                       isActive
-                        ? 'bg-gradient-to-r from-[#7C3AED] via-[#A855F7] to-[#C026D3] text-white shadow-[0_8px_20px_rgba(124,58,237,0.22)]'
+                        ? 'bg-gradient-to-r from-[#C8102E] via-[#E63946] to-[#A50E27] text-white shadow-[0_8px_20px_rgba(200,16,46,0.22)]'
                         : 'text-slate-600 hover:bg-purple-500/8 hover:text-purple-700'
                     }`
                   }
@@ -206,7 +206,7 @@ export default function Sidebar({ mobileOpen, onMobileClose }) {
               className={({ isActive }) =>
                 `flex items-center gap-3.5 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 group relative ${
                   isActive
-                    ? 'bg-gradient-to-r from-[#7C3AED] via-[#A855F7] to-[#C026D3] text-white shadow-[0_8px_20px_rgba(124,58,237,0.22)]'
+                    ? 'bg-gradient-to-r from-[#C8102E] via-[#E63946] to-[#A50E27] text-white shadow-[0_8px_20px_rgba(200,16,46,0.22)]'
                     : 'text-slate-600 hover:bg-purple-500/8 hover:text-purple-700'
                 }`
               }
@@ -253,15 +253,15 @@ export default function Sidebar({ mobileOpen, onMobileClose }) {
         {/* Encabezado del Drawer Móvil */}
         <div className="p-4 border-b border-gray-100 flex items-center justify-between bg-white">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-white border border-purple-100 p-1 shadow-sm flex items-center justify-center flex-shrink-0 overflow-hidden">
-              <img src="/icons/pwa-192x192.png" alt="Madrigales" className="w-full h-full object-contain" />
+            <div className="w-10 h-10 rounded-full bg-white border-2 border-purple-100 shadow-sm flex items-center justify-center flex-shrink-0 overflow-hidden">
+              <img src="/LOGO_OFICIAL.png" alt="Nani Cake" className="w-full h-full object-contain" />
             </div>
             <div>
-              <h2 className="text-base font-extrabold text-gray-900 tracking-tight leading-tight">
-                Madrigales
+              <h2 className="font-script text-2xl font-bold text-purple-700 leading-none">
+                Nani Cake
               </h2>
-              <p className="text-[10px] font-bold tracking-[0.2em] text-fuchsia-600 uppercase leading-tight">
-                PASTELERÍA
+              <p className="text-[10px] font-bold tracking-[0.2em] text-pine-600 uppercase leading-tight mt-1">
+                🎄 PASTELERÍA
               </p>
             </div>
           </div>

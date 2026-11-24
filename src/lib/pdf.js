@@ -25,9 +25,10 @@ async function getBase64ImageFromUrl(imageUrl) {
  */
 export async function generateOrderPDF(order, orderItems = [], settings = {}, emitter = {}) {
   const {
-    business_name = 'Madrigales Pastelería',
-    address = 'Col. Palmira, Tegucigalpa, Honduras',
-    phone = '+504 9999-9999',
+    business_name = 'Nani Cake',
+    // Datos de contacto: se editan en Configuración → Datos del Negocio
+    address = '',
+    phone = '',
     currency_symbol = 'L',
   } = settings
 
@@ -45,13 +46,13 @@ export async function generateOrderPDF(order, orderItems = [], settings = {}, em
   const pageWidth = doc.internal.pageSize.getWidth()
   const margin = 18
 
-  // Colores de identidad de Madrigales
-  const purpleDark = [44, 21, 54]      // #2C1536
-  const purplePrimary = [124, 58, 237] // #7C3AED
-  const fuchsiaAccent = [192, 38, 211] // #C026D3
+  // Colores de identidad de Nani Cake
+  const purpleDark = [15, 46, 31]      // #0F2E1F Verde pino
+  const purplePrimary = [200, 16, 46]  // #C8102E Rojo Navidad
+  const fuchsiaAccent = [165, 14, 39]  // #A50E27 Rojo cereza
   const grayText = [75, 85, 99]        // #4B5563
   const darkText = [17, 24, 39]        // #111827
-  const tableHeaderBg = [59, 23, 76]   // Morado profundo
+  const tableHeaderBg = [21, 70, 45]   // #15462D Verde pino profundo
 
   // 1. Barra superior decorativa
   doc.setFillColor(...purpleDark)
@@ -78,12 +79,13 @@ export async function generateOrderPDF(order, orderItems = [], settings = {}, em
   doc.setTextColor(...fuchsiaAccent)
   doc.setFontSize(8.5)
   doc.setFont('helvetica', 'bold')
-  doc.text('PASTELERÍA Y REPOSTERÍA FINA', headerTextX, logoY + 11)
+  doc.text('PASTELERÍA & REPOSTERÍA', headerTextX, logoY + 11)
 
   doc.setTextColor(...grayText)
   doc.setFontSize(7.5)
   doc.setFont('helvetica', 'normal')
-  doc.text(`${address} · Tel: ${phone}`, headerTextX, logoY + 16)
+  const contactLine = [address, phone && `Tel: ${phone}`].filter(Boolean).join(' · ')
+  if (contactLine) doc.text(contactLine, headerTextX, logoY + 16)
 
   // 4. Bloque derecho: Número de Factura, Fecha y Tipo de Venta
   doc.setTextColor(...purplePrimary)
@@ -102,7 +104,7 @@ export async function generateOrderPDF(order, orderItems = [], settings = {}, em
 
   const isScheduledOrder = order.order_type === 'programado' || (order.delivery_date && order.delivery_date !== order.order_date)
   doc.setFont('helvetica', 'bold')
-  doc.setTextColor(isScheduledOrder ? 124 : 16, isScheduledOrder ? 58 : 185, isScheduledOrder ? 237 : 129)
+  doc.setTextColor(isScheduledOrder ? 200 : 30, isScheduledOrder ? 16 : 110, isScheduledOrder ? 46 : 65)
   doc.text(
     isScheduledOrder ? 'PEDIDO PROGRAMADO' : 'VENTA INMEDIATA',
     pageWidth - margin,
@@ -117,9 +119,9 @@ export async function generateOrderPDF(order, orderItems = [], settings = {}, em
 
   // 5. Cuadro de Datos: Emisor y Cliente
   let infoY = 46
-  doc.setFillColor(250, 247, 249) // #FAF7F9
+  doc.setFillColor(255, 249, 242) // #FFF9F2
   doc.roundedRect(margin, infoY, pageWidth - margin * 2, 24, 3, 3, 'F')
-  doc.setDrawColor(237, 233, 254)
+  doc.setDrawColor(255, 202, 202)
   doc.roundedRect(margin, infoY, pageWidth - margin * 2, 24, 3, 3, 'D')
 
   // Columna Izquierda: Emisor
@@ -254,9 +256,9 @@ export async function generateOrderPDF(order, orderItems = [], settings = {}, em
 
   const boxHeight = hasCashDetails ? 48 : 38
 
-  doc.setFillColor(250, 247, 249)
+  doc.setFillColor(255, 249, 242)
   doc.roundedRect(totalsBoxX, finalY - 2, totalsBoxWidth, boxHeight, 2, 2, 'F')
-  doc.setDrawColor(237, 233, 254)
+  doc.setDrawColor(255, 202, 202)
   doc.roundedRect(totalsBoxX, finalY - 2, totalsBoxWidth, boxHeight, 2, 2, 'D')
 
   let tY = finalY + 3.5
@@ -309,7 +311,7 @@ export async function generateOrderPDF(order, orderItems = [], settings = {}, em
     doc.setTextColor(...grayText)
     doc.text('Vuelto Entregado:', totalsBoxX + 4, tY)
     doc.setFont('helvetica', 'bold')
-    doc.setTextColor(124, 58, 237)
+    doc.setTextColor(200, 16, 46)
     doc.text(formatCurrency(order.change_returned || 0, currencySymbol), pageWidth - margin - 4, tY, { align: 'right' })
   }
 
@@ -328,12 +330,12 @@ export async function generateOrderPDF(order, orderItems = [], settings = {}, em
   doc.setTextColor(...purpleDark)
   doc.setFontSize(8.5)
   doc.setFont('helvetica', 'bold')
-  doc.text('¡Gracias por preferir Madrigales Pastelería!', pageWidth / 2, footerY + 5, { align: 'center' })
+  doc.text('¡Gracias por preferir Nani Cake!', pageWidth / 2, footerY + 5, { align: 'center' })
 
   doc.setTextColor(156, 163, 175)
   doc.setFontSize(7)
   doc.setFont('helvetica', 'normal')
-  doc.text('Comprobante emitido automáticamente por el Sistema de Gestión Madrigales Pastelería', pageWidth / 2, footerY + 9, { align: 'center' })
+  doc.text('Comprobante emitido automáticamente por el Sistema de Gestión Nani Cake', pageWidth / 2, footerY + 9, { align: 'center' })
 
   // 9. Guardar y Descargar
   doc.save(`Factura_${order.order_number}.pdf`)

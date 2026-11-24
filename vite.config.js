@@ -18,17 +18,16 @@ export default defineConfig({
         'LOGO_OFICIAL_BLANCO.png',
         'LOGO_OFICIAL.png',
         'favicon.png',
-        'favicon.svg',
         'robots.txt'
       ],
       manifest: {
         id: '/',
-        name: 'Madrigales Pastelería',
-        short_name: 'Madrigales',
-        description: 'Sistema de gestión y punto de venta de Madrigales Pastelería',
+        name: 'Nani Cake',
+        short_name: 'Nani Cake',
+        description: 'Sistema de gestión y punto de venta de Nani Cake',
         lang: 'es-HN',
         dir: 'ltr',
-        start_url: '/',
+        start_url: '/login',
         scope: '/',
         display: 'standalone',
         display_override: [
@@ -36,7 +35,7 @@ export default defineConfig({
           'standalone',
           'minimal-ui'
         ],
-        theme_color: '#7C3AED',
+        theme_color: '#C8102E',
         background_color: '#FFFFFF',
         orientation: 'portrait-primary',
         categories: ['business', 'productivity', 'food'],

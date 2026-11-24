@@ -1,5 +1,5 @@
 -- ============================================================
--- MADRIGALES PASTELERÍA — Base de Datos Completa con Jerarquía de Seguridad
+-- NANI CAKE — Base de Datos Completa con Jerarquía de Seguridad
 -- Propietario Principal: Olman Martínez
 -- Administrador: Yimi Ríos / Administradores
 -- Cajeros: Personal de venta y facturación
@@ -215,7 +215,7 @@ CREATE TABLE IF NOT EXISTS inventory_movements (
 -- ============================================================
 CREATE TABLE IF NOT EXISTS business_settings (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  business_name TEXT NOT NULL DEFAULT 'Madrigales Pastelería',
+  business_name TEXT NOT NULL DEFAULT 'Nani Cake',
   logo_url TEXT,
   address TEXT,
   phone TEXT,
@@ -231,9 +231,9 @@ CREATE TABLE IF NOT EXISTS business_settings (
 
 INSERT INTO business_settings (business_name, currency_symbol, invoice_footer)
 VALUES (
-  'Madrigales Pastelería', 
+  'Nani Cake', 
   'L', 
-  '¡Gracias por endulzar tus momentos con Madrigales Pastelería! 🎂'
+  '¡Gracias por endulzar tu Navidad con Nani Cake! 🎄🎂'
 )
 ON CONFLICT DO NOTHING;
 

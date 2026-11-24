@@ -16,7 +16,7 @@ export const useSettingsStore = create((set, get) => ({
         .single()
 
       if (error && error.code !== 'PGRST116') throw error
-      set({ settings: data || { business_name: 'Madrigales Pastelería', currency_symbol: 'L' } })
+      set({ settings: data || { business_name: 'Nani Cake', currency_symbol: 'L' } })
       return data
     } catch (error) {
       console.error('Error fetching settings:', error)
@@ -56,6 +56,6 @@ export const useSettingsStore = create((set, get) => ({
   },
 
   getBusinessName: () => {
-    return get().settings?.business_name || 'Madrigales Pastelería'
+    return get().settings?.business_name || 'Nani Cake'
   },
 }))

@@ -21,7 +21,7 @@ const PAGE_NAMES = {
 function getPageTitle(pathname) {
   if (PAGE_NAMES[pathname]) return PAGE_NAMES[pathname]
   if (pathname.startsWith('/pedidos/')) return 'Detalle del Pedido'
-  return 'Madrigales'
+  return 'Nani Cake'
 }
 
 export default function Header({ onToggleSidebar }) {
@@ -58,7 +58,7 @@ export default function Header({ onToggleSidebar }) {
     const handleAppInstalled = () => {
       setInstallPrompt(null)
       setIsStandalone(true)
-      toast.success('¡Madrigales Pastelería instalada con éxito!')
+      toast.success('¡Nani Cake instalada con éxito!')
     }
 
     window.addEventListener('beforeinstallprompt', handlePrompt)
@@ -81,7 +81,7 @@ export default function Header({ onToggleSidebar }) {
     if (outcome === 'accepted') {
       setInstallPrompt(null)
       setIsStandalone(true)
-      toast.success('¡Madrigales Pastelería instalada con éxito!')
+      toast.success('¡Nani Cake instalada con éxito!')
     }
   }
 
@@ -123,14 +123,14 @@ export default function Header({ onToggleSidebar }) {
 
         {/* Branding móvil */}
         <div className="flex items-center gap-2 lg:hidden">
-          <div className="w-8 h-8 rounded-lg bg-white border border-purple-100 p-0.5 shadow-xs flex items-center justify-center overflow-hidden">
-            <img src="/LOGO_OFICIAL_BLANCO.png" alt="Madrigales" className="w-full h-full object-contain" />
+          <div className="w-8 h-8 rounded-full bg-white border border-purple-100 shadow-xs flex items-center justify-center overflow-hidden">
+            <img src="/LOGO_OFICIAL_BLANCO.png" alt="Nani Cake" className="w-full h-full object-contain" />
           </div>
           <div>
-            <span className="text-sm font-extrabold text-gray-900 leading-tight block">
-              Madrigales
+            <span className="font-script text-lg font-bold text-purple-700 leading-none block">
+              Nani Cake
             </span>
-            <span className="text-[9px] font-bold text-fuchsia-600 tracking-wider uppercase block leading-none">
+            <span className="text-[9px] font-bold text-pine-600 tracking-wider uppercase block leading-none mt-0.5">
               {title}
             </span>
           </div>

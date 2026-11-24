@@ -147,7 +147,7 @@ export default function ProductsPage() {
         <div>
           <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Catálogo de Productos</h1>
           <p className="text-sm text-gray-500 mt-0.5">
-            Administra los pasteles, postres y artículos a la venta en Madrigales Pastelería
+            Administra los pasteles, postres y artículos a la venta en Nani Cake
           </p>
         </div>
 

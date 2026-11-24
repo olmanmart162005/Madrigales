@@ -15,7 +15,7 @@ import { useAuthStore } from '@/store/authStore'
 import { StatCardSkeleton } from '@/components/ui/Skeleton'
 import { OrderStatusBadge } from '@/components/ui/Badge'
 
-const PIE_COLORS = ['#8B5CF6', '#EC4899', '#F59E0B', '#10B981', '#6366F1']
+const PIE_COLORS = ['#C8102E', '#1E6E41', '#D4A017', '#F47F8C', '#7BC796']
 
 export default function DashboardPage() {
   const [loading, setLoading] = useState(true)
@@ -177,7 +177,7 @@ export default function DashboardPage() {
       {/* ============================================================
           BANNER COMPACTO DE BIENVENIDA
           ============================================================ */}
-      <div className="rounded-2xl p-4 sm:p-5 bg-gradient-to-r from-[#2C1536] via-[#3B1947] to-[#4A1E59] text-white shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3 border border-purple-900/40">
+      <div className="rounded-2xl p-4 sm:p-5 bg-gradient-to-r from-[#0F2E1F] via-[#15462D] to-[#1E6E41] text-white shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3 border border-purple-900/40">
         <div>
           <div className="flex items-center gap-2">
             <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-white/10 text-purple-200 border border-white/10">
@@ -191,7 +191,7 @@ export default function DashboardPage() {
             Hola, {profile?.full_name?.split(' ')[0] || 'Olman'} 👋
           </h1>
           <p className="text-xs text-purple-200/80 mt-0.5">
-            Resumen operativo y comercial de Madrigales Pastelería
+            Resumen operativo y comercial de Nani Cake
           </p>
         </div>
 
@@ -320,8 +320,8 @@ export default function DashboardPage() {
               <AreaChart data={salesByDay}>
                 <defs>
                   <linearGradient id="salesGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#8B5CF6" stopOpacity={0.35} />
-                    <stop offset="95%" stopColor="#8B5CF6" stopOpacity={0.0} />
+                    <stop offset="5%" stopColor="#C8102E" stopOpacity={0.35} />
+                    <stop offset="95%" stopColor="#C8102E" stopOpacity={0.0} />
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F3F4F6" />
@@ -334,7 +334,7 @@ export default function DashboardPage() {
                 <Area
                   type="monotone"
                   dataKey="total"
-                  stroke="#8B5CF6"
+                  stroke="#C8102E"
                   strokeWidth={2.5}
                   fillOpacity={1}
                   fill="url(#salesGrad)"

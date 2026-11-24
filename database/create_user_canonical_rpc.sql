@@ -1,5 +1,5 @@
 -- ============================================================
--- MADRIGALES PASTELERÍA: FUNCIÓN RPC CANÓNICA PARA SUPABASE AUTH
+-- NANI CAKE: FUNCIÓN RPC CANÓNICA PARA SUPABASE AUTH
 -- (Crea usuarios directamente con compatibilidad 100% GoTrue Postgres 15)
 -- ============================================================
 

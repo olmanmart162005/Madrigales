@@ -169,7 +169,7 @@ export default function NewOrderPage() {
     setItems(items.filter((_, i) => i !== index))
   }
 
-  // Generador único de número de pedido MAD-000001
+  // Generador único de número de pedido NC-000001
   const generateNextOrderNumber = async () => {
     try {
       const { data, error } = await supabase.from('orders').select('order_number')
@@ -188,9 +188,9 @@ export default function NewOrderPage() {
         })
       }
       const nextNum = maxNum + 1
-      return `MAD-${String(nextNum).padStart(6, '0')}`
+      return `NC-${String(nextNum).padStart(6, '0')}`
     } catch {
-      return `MAD-${String(Date.now()).slice(-6)}`
+      return `NC-${String(Date.now()).slice(-6)}`
     }
   }
 
@@ -298,7 +298,7 @@ export default function NewOrderPage() {
         if (orderError) {
           if (orderError.code === '23505' || orderError.message?.includes('duplicate key')) {
             const currentNum = parseInt(orderNumber.replace(/\D/g, ''), 10) || 1
-            orderNumber = `MAD-${String(currentNum + 1).padStart(6, '0')}`
+            orderNumber = `NC-${String(currentNum + 1).padStart(6, '0')}`
             continue
           }
           throw orderError
@@ -394,7 +394,7 @@ export default function NewOrderPage() {
             <h1 className="text-xl sm:text-2xl font-black text-gray-900 tracking-tight flex items-center gap-2">
               <span>Punto de Venta · Caja</span>
               <span className="text-xs px-2.5 py-0.5 rounded-full bg-purple-100 text-purple-900 font-bold border border-purple-200">
-                POS Madrigales
+                POS Nani Cake
               </span>
             </h1>
             <p className="text-xs text-gray-500 mt-0.5">

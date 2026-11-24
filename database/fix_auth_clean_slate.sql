@@ -1,5 +1,5 @@
 -- ============================================================
--- MADRIGALES PASTELERÍA: LIMPIEZA Y REPARACIÓN DEFINITIVA DE SUPABASE AUTH
+-- NANI CAKE: LIMPIEZA Y REPARACIÓN DEFINITIVA DE SUPABASE AUTH
 -- (Elimina registros corruptos de auth.users y deja intacto al Propietario)
 -- ============================================================
 

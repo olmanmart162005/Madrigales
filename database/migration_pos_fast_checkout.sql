@@ -1,5 +1,5 @@
 -- ============================================================
--- MADRIGALES PASTELERÍA: MIGRACIÓN PUNTO DE VENTA (POS) RÁPIDO
+-- NANI CAKE: MIGRACIÓN PUNTO DE VENTA (POS) RÁPIDO
 -- Soporte para Venta Inmediata vs Pedido Programado,
 -- Efectivo Recibido, Vueltos y Estado de Pago
 -- ============================================================

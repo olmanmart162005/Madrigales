@@ -17,7 +17,7 @@ export default function AppLayout() {
   const handleMobileClose = () => setMobileOpen(false)
 
   return (
-    <div className="min-h-screen bg-[#FAF7F9] flex font-sans relative w-full overflow-x-hidden">
+    <div className="min-h-screen bg-[#FFF9F2] flex font-sans relative w-full overflow-x-hidden">
       {/* Sidebar Desktop (Fijo 260px) & Drawer Móvil */}
       <Sidebar
         mobileOpen={mobileOpen}

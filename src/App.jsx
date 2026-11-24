@@ -43,8 +43,8 @@ function App() {
             fontFamily: 'Inter, sans-serif',
           },
           success: {
-            iconTheme: { primary: '#7C3AED', secondary: '#fff' },
-            style: { background: '#F5F3FF', color: '#4C1D95', border: '1px solid #DDD6FE' },
+            iconTheme: { primary: '#1E6E41', secondary: '#fff' },
+            style: { background: '#EEF8F1', color: '#123A26', border: '1px solid #AEDFBE' },
           },
           error: {
             iconTheme: { primary: '#EF4444', secondary: '#fff' },

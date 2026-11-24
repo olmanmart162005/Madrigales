@@ -1,5 +1,5 @@
 -- ============================================================
--- MADRIGALES PASTELERÍA — MIGRACIÓN DE SEGURIDAD & ROLES (IDEMPOTENTE)
+-- NANI CAKE — MIGRACIÓN DE SEGURIDAD & ROLES (IDEMPOTENTE)
 -- Diseñada para ejecutarse sobre una base de datos existente
 -- ============================================================
 

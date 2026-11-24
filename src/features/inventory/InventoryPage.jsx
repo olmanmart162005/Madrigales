@@ -295,7 +295,7 @@ export default function InventoryPage() {
                     <EmptyState
                       icon={Warehouse}
                       title="No se encontraron materias primas"
-                      message="Agrega insumos como harina, azúcar o empaques para controlar el almacén de Madrigales Pastelería."
+                      message="Agrega insumos como harina, azúcar o empaques para controlar el almacén de Nani Cake."
                       action={{
                         label: 'Nueva Materia Prima',
                         onClick: handleOpenCreate,

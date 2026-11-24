@@ -11,7 +11,7 @@ const updateSW = registerSW({
     updateSW(true)
   },
   onOfflineReady() {
-    console.log('Madrigales Pastelería está lista para uso offline')
+    console.log('Nani Cake está lista para uso offline')
   },
   immediate: true,
 })

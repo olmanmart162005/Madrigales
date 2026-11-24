@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import Snowfall from '@/components/ui/Snowfall'
 
 export default function SplashScreen({ onComplete }) {
   const [isLoaded, setIsLoaded] = useState(false)
@@ -40,15 +41,17 @@ export default function SplashScreen({ onComplete }) {
   return (
     <div
       onClick={() => onComplete?.()}
-      className={`fixed inset-0 z-50 flex flex-col items-center justify-center select-none cursor-pointer bg-[#0A0C16] text-white transition-all duration-500 ease-out ${
+      className={`fixed inset-0 z-50 flex flex-col items-center justify-center select-none cursor-pointer bg-[#081A11] text-white transition-all duration-500 ease-out ${
         isExiting ? 'opacity-0 scale-105 pointer-events-none' : 'opacity-100 scale-100'
       }`}
     >
-      {/* Halo de luz suave púrpura/fucsia luminoso */}
+      <Snowfall count={30} />
+
+      {/* Halo de luz navideño (rojo y dorado) */}
       <div
         className="absolute w-80 h-80 sm:w-96 sm:h-96 rounded-full pointer-events-none"
         style={{
-          background: 'radial-gradient(circle, rgba(168, 85, 247, 0.25) 0%, rgba(217, 70, 239, 0.12) 45%, transparent 70%)',
+          background: 'radial-gradient(circle, rgba(230, 57, 70, 0.25) 0%, rgba(212, 160, 23, 0.12) 45%, transparent 70%)',
           filter: 'blur(50px)',
         }}
       />
@@ -62,13 +65,15 @@ export default function SplashScreen({ onComplete }) {
         }}
       >
         {/* Tarjeta Blanca con Logo Oficial */}
-        <div className="w-36 h-36 sm:w-44 sm:h-44 rounded-3xl bg-white p-3.5 sm:p-4 shadow-2xl shadow-purple-600/30 border border-white/20 flex items-center justify-center mb-7">
+        <div className="w-36 h-36 sm:w-44 sm:h-44 rounded-full bg-white p-1 shadow-2xl shadow-purple-600/40 border-4 border-gold-400/70 flex items-center justify-center mb-7 overflow-hidden">
           <img
             src="/LOGO_OFICIAL_BLANCO.png"
-            alt="Madrigales Pastelería"
+            alt="Nani Cake"
             className="w-full h-full object-contain"
           />
         </div>
+
+        <h1 className="font-script text-4xl sm:text-5xl font-bold text-white mb-2">Nani Cake</h1>
 
         {/* Subtítulo Oficial */}
         <p className="text-[11px] sm:text-xs font-black tracking-[0.25em] text-white uppercase mb-5">
@@ -78,14 +83,14 @@ export default function SplashScreen({ onComplete }) {
         {/* Barra de Progreso */}
         <div className="w-48 sm:w-56 h-1.5 bg-white/10 rounded-full overflow-hidden mb-3">
           <div
-            className="h-full bg-gradient-to-r from-purple-500 via-fuchsia-500 to-pink-500 rounded-full transition-all duration-150 ease-out"
+            className="h-full bg-gradient-to-r from-purple-600 via-gold-400 to-pine-400 rounded-full transition-all duration-150 ease-out"
             style={{ width: `${progress}%` }}
           />
         </div>
 
         {/* Versión y País */}
-        <p className="text-[10px] text-slate-400 font-medium tracking-wider">
-          v1.0 &middot; Honduras
+        <p className="text-[10px] text-pine-200/70 font-medium tracking-wider">
+          v1.0 &middot; Honduras &middot; 🎄 Feliz Navidad
         </p>
       </div>
     </div>

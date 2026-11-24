@@ -77,22 +77,22 @@ export default function InvoicePreviewModal({ isOpen, onClose, order, items = []
           {/* ENCABEZADO DE LA FACTURA */}
           <div className="flex flex-col sm:flex-row items-center sm:items-start justify-between gap-6 border-b-2 border-purple-100 pb-6">
             <div className="flex items-center gap-4 text-center sm:text-left">
-              {/* Logo Oficial de Madrigales */}
+              {/* Logo Oficial de Nani Cake */}
               <div className="w-16 h-16 rounded-2xl bg-white border border-purple-100 p-2 shadow-xs flex items-center justify-center flex-shrink-0">
                 <img
                   src="/LOGO_OFICIAL.png"
-                  alt="Madrigales"
+                  alt="Nani Cake"
                   className="w-full h-full object-contain"
                   onError={(e) => { e.target.style.display = 'none' }}
                 />
               </div>
 
               <div>
-                <h1 className="text-2xl font-black text-gray-900 tracking-tight leading-tight">
-                  MADRIGALES PASTELERÍA
+                <h1 className="font-script text-4xl font-bold text-purple-700 leading-tight">
+                  Nani Cake
                 </h1>
-                <p className="text-xs font-extrabold tracking-[0.25em] text-fuchsia-600 uppercase">
-                  Pastelería y Repostería Fina
+                <p className="text-xs font-extrabold tracking-[0.25em] text-pine-600 uppercase">
+                  Pastelería &amp; Repostería
                 </p>
                 {settings?.address && (
                   <p className="text-[11px] text-gray-500 mt-1">{settings.address}</p>
@@ -285,7 +285,7 @@ export default function InvoicePreviewModal({ isOpen, onClose, order, items = []
           {/* PIE DE PÁGINA INSTITUCIONAL */}
           <div className="border-t border-gray-200 pt-6 text-center space-y-1">
             <p className="text-xs font-bold text-purple-900">
-              ¡Gracias por preferir Madrigales Pastelería!
+              ¡Gracias por preferir Nani Cake!
             </p>
             <p className="text-[10px] text-gray-400">
               Calidad y dulzura artesanal en cada detalle. Para consultas o eventos, comunícate con nosotros.

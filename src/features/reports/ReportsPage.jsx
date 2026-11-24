@@ -13,7 +13,7 @@ import { useSettingsStore } from '@/store/settingsStore'
 import { TableSkeleton } from '@/components/ui/Skeleton'
 import toast from 'react-hot-toast'
 
-const COLORS = ['#7C3AED', '#F59E0B', '#10B981', '#3B82F6', '#EC4899', '#8B5CF6']
+const COLORS = ['#C8102E', '#1E6E41', '#D4A017', '#F47F8C', '#4AA86E', '#850F24']
 
 export default function ReportsPage() {
   const [activeTab, setActiveTab] = useState('ventas')
@@ -141,7 +141,7 @@ export default function ReportsPage() {
     const encodedUri = encodeURI(csvContent)
     const link = document.createElement('a')
     link.setAttribute('href', encodedUri)
-    link.setAttribute('download', `Reporte_Ventas_Madrigales_${dateFrom}_al_${dateTo}.csv`)
+    link.setAttribute('download', `Reporte_Ventas_NaniCake_${dateFrom}_al_${dateTo}.csv`)
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
@@ -295,7 +295,7 @@ export default function ReportsPage() {
                   <XAxis type="number" tick={{ fontSize: 11 }} />
                   <YAxis type="category" dataKey="name" width={140} tick={{ fontSize: 11 }} />
                   <Tooltip formatter={(val) => [`${currencySymbol}${Number(val).toFixed(2)}`, 'Ventas']} />
-                  <Bar dataKey="total" fill="#7C3AED" radius={[0, 4, 4, 0]} />
+                  <Bar dataKey="total" fill="#C8102E" radius={[0, 4, 4, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>

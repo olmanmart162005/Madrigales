@@ -1,5 +1,5 @@
 -- ============================================================
--- MADRIGALES: SISTEMA FINANCIERO INTEGRAL DE PEDIDOS (ORDEN DE MIGRACIÓN CORREGIDO)
+-- NANI CAKE: SISTEMA FINANCIERO INTEGRAL DE PEDIDOS (ORDEN DE MIGRACIÓN CORREGIDO)
 -- ============================================================
 
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";

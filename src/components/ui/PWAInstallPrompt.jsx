@@ -18,7 +18,7 @@ export default function PWAInstallPrompt() {
       e.preventDefault()
       setDeferredPrompt(e)
       // Mostrar solo si no se ha descartado recientemente
-      const dismissed = sessionStorage.getItem('madrigales_pwa_dismissed')
+      const dismissed = sessionStorage.getItem('nanicake_pwa_dismissed')
       if (!dismissed) {
         setShowPrompt(true)
       }
@@ -51,7 +51,7 @@ export default function PWAInstallPrompt() {
 
   const handleDismiss = () => {
     setShowPrompt(false)
-    sessionStorage.setItem('madrigales_pwa_dismissed', 'true')
+    sessionStorage.setItem('nanicake_pwa_dismissed', 'true')
   }
 
   if (isInstalled || !showPrompt) return null
@@ -61,12 +61,12 @@ export default function PWAInstallPrompt() {
       <div className="flex items-start gap-3">
         {/* Logo icono */}
         <div className="w-10 h-10 rounded-xl p-1 bg-white border border-purple-100 shadow-xs flex items-center justify-center flex-shrink-0">
-          <img src="/LOGO_OFICIAL.png" alt="Madrigales" className="w-full h-full object-contain" />
+          <img src="/LOGO_OFICIAL.png" alt="Nani Cake" className="w-full h-full object-contain" />
         </div>
 
         <div className="flex-1 min-w-0">
           <h4 className="text-xs font-bold text-gray-900 leading-tight">
-            Instalar Madrigales App
+            🎄 Instalar Nani Cake App
           </h4>
           <p className="text-[11px] text-gray-500 mt-0.5 leading-snug">
             Instala la aplicación en tu computadora o teléfono para acceso instantáneo y fluido.
@@ -75,7 +75,7 @@ export default function PWAInstallPrompt() {
           <div className="flex items-center gap-2 mt-3">
             <button
               onClick={handleInstallClick}
-              className="px-3.5 py-1.5 bg-gradient-to-r from-purple-700 to-pink-600 hover:from-purple-800 hover:to-pink-700 text-white font-bold text-xs rounded-lg shadow-sm flex items-center gap-1.5 transition-all cursor-pointer"
+              className="px-3.5 py-1.5 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white font-bold text-xs rounded-lg shadow-sm flex items-center gap-1.5 transition-all cursor-pointer"
             >
               <Download className="w-3.5 h-3.5" />
               <span>Instalar App</span>

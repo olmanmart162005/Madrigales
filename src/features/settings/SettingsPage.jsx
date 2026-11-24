@@ -30,28 +30,28 @@ export default function SettingsPage() {
 
   const { register, handleSubmit, reset } = useForm({
     defaultValues: {
-      business_name: 'Madrigales Pastelería',
+      business_name: 'Nani Cake',
       address: '',
       phone: '',
       whatsapp: '',
       email: '',
       currency_symbol: 'L',
       invoice_header: '',
-      invoice_footer: '¡Gracias por endulzar tus momentos con Madrigales Pastelería! 🎂',
+      invoice_footer: '¡Gracias por endulzar tus momentos con Nani Cake! 🎂',
     },
   })
 
   useEffect(() => {
     if (settings) {
       reset({
-        business_name: settings.business_name || 'Madrigales Pastelería',
+        business_name: settings.business_name || 'Nani Cake',
         address: settings.address || '',
         phone: settings.phone || '',
         whatsapp: settings.whatsapp || '',
         email: settings.email || '',
         currency_symbol: settings.currency_symbol || 'L',
         invoice_header: settings.invoice_header || '',
-        invoice_footer: settings.invoice_footer || '¡Gracias por endulzar tus momentos con Madrigales Pastelería! 🎂',
+        invoice_footer: settings.invoice_footer || '¡Gracias por endulzar tus momentos con Nani Cake! 🎂',
       })
       setLogoPreview(settings.logo_url || null)
     }
@@ -180,7 +180,7 @@ export default function SettingsPage() {
       <div>
         <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Configuración del Sistema</h1>
         <p className="text-sm text-gray-500 mt-0.5">
-          Parámetros generales de Madrigales Pastelería, métodos de pago y catálogos
+          Parámetros generales de Nani Cake, métodos de pago y catálogos
         </p>
       </div>
 

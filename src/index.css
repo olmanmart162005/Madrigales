@@ -15,7 +15,7 @@
   }
 
   body {
-    @apply bg-[#FAF7F9] text-gray-900 antialiased;
+    @apply bg-[#FFF9F2] text-gray-900 antialiased;
     margin: 0;
     padding: 0;
     overflow-x: hidden;
@@ -39,7 +39,7 @@
   /* Scrollbar personalizada */
   .scrollbar-thin {
     scrollbar-width: thin;
-    scrollbar-color: #c4b5fd #f5f3ff;
+    scrollbar-color: #FDA3A3 #FFF4F4;
   }
   
   .scrollbar-thin::-webkit-scrollbar {
@@ -79,7 +79,7 @@
 
   /* Button primary */
   .btn-primary {
-    @apply px-4 py-2.5 bg-gradient-to-r from-purple-700 to-indigo-600 hover:from-purple-800 hover:to-indigo-700
+    @apply px-4 py-2.5 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800
            text-white text-xs font-bold rounded-xl shadow-sm hover:shadow transition-all cursor-pointer inline-flex items-center justify-center gap-1.5;
   }
 
