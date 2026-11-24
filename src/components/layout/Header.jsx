@@ -99,7 +99,7 @@ export default function Header({ onToggleSidebar }) {
     try {
       await signOut()
       toast.success('Sesión cerrada')
-      navigate('/login')
+      navigate('/')
     } catch {
       toast.error('Error al cerrar sesión')
     }

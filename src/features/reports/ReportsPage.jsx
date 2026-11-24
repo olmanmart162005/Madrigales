@@ -242,7 +242,7 @@ export default function ReportsPage() {
             </div>
 
             <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
+              <table className="w-full min-w-[640px] text-left text-xs">
                 <thead className="bg-gray-50 text-gray-500 font-semibold border-b border-gray-100">
                   <tr>
                     <th className="px-4 py-3"># Pedido</th>
@@ -301,8 +301,8 @@ export default function ReportsPage() {
             </div>
           </div>
 
-          <div className="card overflow-hidden">
-            <table className="w-full text-left text-xs">
+          <div className="card overflow-x-auto">
+            <table className="w-full min-w-[520px] text-left text-xs">
               <thead className="bg-gray-50 text-gray-500 font-semibold border-b border-gray-100">
                 <tr>
                   <th className="px-4 py-3">Producto</th>
@@ -375,7 +375,7 @@ export default function ReportsPage() {
           </div>
 
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
+            <table className="w-full min-w-[640px] text-left text-xs">
               <thead className="bg-gray-50 text-gray-500 font-semibold border-b border-gray-100">
                 <tr>
                   <th className="px-4 py-3">Fecha</th>

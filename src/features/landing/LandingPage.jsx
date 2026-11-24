@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import {
   Search, Cake, Gift, CalendarDays, Sparkles, MapPin, Phone, Mail, MessageCircle,
   LogIn, LayoutDashboard, Star, X, ShoppingBag, Plus, Minus, Trash2, ChevronDown,
-  Check, ArrowRight,
+  Check, ArrowRight, FileText, Loader2,
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { formatCurrency } from '@/utils'
@@ -27,7 +27,7 @@ function toWhatsAppNumber(raw) {
 }
 
 function waLink(number, text) {
-  return number ? `https://wa.me/${number}?text=${encodeURIComponent(text)}` : null
+  return number ? `https://api.whatsapp.com/send?phone=${number}&text=${encodeURIComponent(text)}` : null
 }
 
 function activeVariants(product) {
@@ -49,8 +49,8 @@ function todayISO() {
   return d.toISOString().slice(0, 10)
 }
 
-function buildOrderMessage({ items, total, currency, name, date, notes }) {
-  const lines = ['¡Hola Nani Cake! 🎄 Quiero hacer este pedido:', '']
+function buildOrderMessage({ items, total, currency, name, date, notes, folio, pdfUrl }) {
+  const lines = [`¡Hola Nani Cake! 🎄 Quiero hacer este pedido${folio ? ` (*${folio}*)` : ''}:`, '']
   items.forEach((i) => {
     const label = i.variant ? `${i.name} (${i.variant})` : i.name
     lines.push(`• ${i.qty} x ${label} — ${formatCurrency(i.qty * i.price, currency)}`)
@@ -62,6 +62,7 @@ function buildOrderMessage({ items, total, currency, name, date, notes }) {
     lines.push(`Fecha deseada: ${d}/${m}/${y}`)
   }
   if (notes) lines.push(`Notas: ${notes}`)
+  if (pdfUrl) lines.push('', '📄 Detalle del pedido en PDF:', pdfUrl)
   lines.push('', '¿Me confirman disponibilidad? ¡Gracias!')
   return lines.join('\n')
 }
@@ -272,13 +273,63 @@ function ProductModal({ product, currency, onClose, onAdd }) {
   )
 }
 
-function CartDrawer({ open, onClose, cart, currency, waNumber }) {
+function CartDrawer({ open, onClose, cart, currency, waNumber, business }) {
   const [name, setName] = useState('')
   const [date, setDate] = useState('')
   const [notes, setNotes] = useState('')
+  const [sending, setSending] = useState(false)
+  const [sent, setSent] = useState(null)
+  const [nameError, setNameError] = useState(false)
   useModalBehavior(open, onClose)
 
-  const link = waLink(waNumber, buildOrderMessage({ items: cart.items, total: cart.total, currency, name, date, notes }))
+  const handleSend = async () => {
+    if (!name.trim()) {
+      setNameError(true)
+      return
+    }
+    // Abrir la pestaña de WhatsApp de inmediato (evita el bloqueo de ventanas emergentes)
+    const waWindow = window.open('', '_blank')
+    setSending(true)
+    const items = cart.items
+    const total = cart.total
+    let folio = null
+    let pdfUrl = null
+    let downloaded = false
+    try {
+      const { generateWebOrderPdf, makeWebOrderFolio } = await import('@/lib/webOrderPdf')
+      folio = makeWebOrderFolio()
+      const { blob, doc, fileName } = await generateWebOrderPdf({
+        folio,
+        items,
+        total,
+        currency,
+        customer: { name: name.trim(), date, notes: notes.trim() },
+        business,
+      })
+      // Copia para el cliente
+      doc.save(fileName)
+      downloaded = true
+      // Copia en línea para Nani Cake (el enlace va en el mensaje)
+      const unique = (window.crypto?.randomUUID?.() || String(Date.now())).slice(0, 8)
+      const path = `pedidos/${fileName.replace('.pdf', '')}-${unique}.pdf`
+      const { error } = await supabase.storage
+        .from('pedidos-web')
+        .upload(path, blob, { contentType: 'application/pdf', upsert: false })
+      if (!error) pdfUrl = supabase.storage.from('pedidos-web').getPublicUrl(path).data.publicUrl
+      else console.warn('No se pudo subir el PDF del pedido:', error.message)
+    } catch (err) {
+      console.error('Error generando PDF del pedido:', err)
+    }
+
+    const link = waLink(
+      waNumber,
+      buildOrderMessage({ items, total, currency, name: name.trim(), date, notes: notes.trim(), folio, pdfUrl })
+    )
+    if (waWindow && !waWindow.closed) waWindow.location.href = link
+    else window.location.href = link
+    setSending(false)
+    setSent({ folio, downloaded })
+  }
 
   return (
     <div className={`fixed inset-0 z-[70] ${open ? '' : 'pointer-events-none'}`} aria-hidden={!open}>
@@ -338,8 +389,19 @@ function CartDrawer({ open, onClose, cart, currency, waNumber }) {
 
               <div className="pt-2 space-y-3">
                 <label className="block">
-                  <span className="label">Tu nombre</span>
-                  <input value={name} onChange={(e) => setName(e.target.value)} className="input" placeholder="¿A nombre de quién?" />
+                  <span className="label">Tu nombre *</span>
+                  <input
+                    value={name}
+                    onChange={(e) => {
+                      setName(e.target.value)
+                      setNameError(false)
+                    }}
+                    className={`input ${nameError ? 'border-red-400 ring-2 ring-red-200' : ''}`}
+                    placeholder="¿A nombre de quién?"
+                    autoComplete="name"
+                    aria-invalid={nameError}
+                  />
+                  {nameError && <span className="text-xs text-red-600 mt-1 block">Escribe tu nombre para el pedido.</span>}
                 </label>
                 <label className="block">
                   <span className="label">Fecha deseada de entrega</span>
@@ -357,20 +419,37 @@ function CartDrawer({ open, onClose, cart, currency, waNumber }) {
                 <span className="text-sm font-semibold text-gray-600">Total estimado</span>
                 <span className="text-2xl font-extrabold text-gray-900">{formatCurrency(cart.total, currency)}</span>
               </div>
-              {link ? (
-                <a
-                  href={link}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-full inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-full bg-pine-600 hover:bg-pine-700 text-white font-bold shadow-md transition-colors"
-                >
-                  <MessageCircle className="w-5 h-5" /> Enviar pedido por WhatsApp
-                </a>
-              ) : (
-                <p className="text-xs text-center text-gray-500 bg-gray-50 rounded-xl p-3">
-                  Pronto podrás enviar tu pedido por WhatsApp desde aquí.
-                </p>
+              {sent && (
+                <div className="rounded-2xl bg-pine-50 border border-pine-200 p-3 text-xs text-pine-900 space-y-1" role="status">
+                  <p className="font-bold flex items-center gap-1.5">
+                    <Check className="w-4 h-4" /> ¡Pedido {sent.folio || ''} preparado!
+                  </p>
+                  <p>{sent.downloaded ? 'Se descargó tu PDF con el detalle. ' : ''}Termina de enviarlo en WhatsApp.</p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      cart.clear()
+                      setSent(null)
+                      onClose()
+                    }}
+                    className="font-bold underline"
+                  >
+                    Ya lo envié · vaciar pedido
+                  </button>
+                </div>
               )}
+              <button
+                type="button"
+                onClick={handleSend}
+                disabled={sending || !waNumber}
+                className="w-full inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-full bg-pine-600 hover:bg-pine-700 disabled:opacity-60 text-white font-bold shadow-md transition-colors"
+              >
+                {sending ? <Loader2 className="w-5 h-5 animate-spin" /> : <MessageCircle className="w-5 h-5" />}
+                {sending ? 'Preparando tu PDF...' : 'Enviar pedido por WhatsApp'}
+              </button>
+              <p className="flex items-center justify-center gap-1.5 text-[11px] text-gray-500">
+                <FileText className="w-3.5 h-3.5" /> Incluye un PDF detallado de tu pedido
+              </p>
               <button type="button" onClick={cart.clear} className="w-full text-xs font-semibold text-gray-400 hover:text-red-500">
                 Vaciar pedido
               </button>
@@ -463,7 +542,7 @@ export default function LandingPage() {
   }, [notice])
 
   const currency = settings?.currency_symbol || 'L'
-  const waNumber = toWhatsAppNumber(settings?.whatsapp || settings?.phone)
+  const waNumber = toWhatsAppNumber(settings?.whatsapp || LANDING.whatsapp)
   const contactLink = waLink(waNumber, '¡Hola Nani Cake! 🎄 Quiero información para un pedido navideño.')
 
   const addToCart = (product, variant = null, qty = 1) => {
@@ -505,7 +584,8 @@ export default function LandingPage() {
     document.getElementById('catalogo')?.scrollIntoView({ behavior: 'smooth' })
   }
 
-  const hasContact = settings?.address || settings?.phone || settings?.whatsapp || settings?.email
+  const shownWhatsapp = settings?.whatsapp || LANDING.whatsapp
+  const hasContact = settings?.address || settings?.phone || shownWhatsapp || settings?.email
 
   return (
     <div className="min-h-screen bg-cream-50 text-gray-900 font-sans">
@@ -529,15 +609,14 @@ export default function LandingPage() {
             ))}
           </div>
           <div className="flex items-center gap-2">
-            {user ? (
-              <Link to="/panel" className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-pine-700 hover:bg-pine-800 text-white text-xs font-bold">
-                <LayoutDashboard className="w-4 h-4" /> <span className="hidden sm:inline">Ir al sistema</span>
-              </Link>
-            ) : (
-              <Link to="/login" className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full border border-purple-200 text-xs font-bold text-purple-700 hover:bg-purple-50">
-                <LogIn className="w-4 h-4" /> <span className="hidden sm:inline">Acceso personal</span>
-              </Link>
-            )}
+            <Link
+              to={user ? '/panel' : '/login'}
+              className="inline-flex items-center gap-1.5 px-3 sm:px-3.5 py-2 rounded-full bg-pine-700 hover:bg-pine-800 text-white text-xs font-bold shadow-sm"
+              title="Ir a la administración"
+            >
+              {user ? <LayoutDashboard className="w-4 h-4" /> : <LogIn className="w-4 h-4" />}
+              <span>Admin<span className="hidden sm:inline">istración</span></span>
+            </Link>
             <button
               type="button"
               onClick={() => setCartOpen(true)}
@@ -821,16 +900,23 @@ export default function LandingPage() {
                 </a>
               </li>
             )}
-            {settings?.phone && (
+            {settings?.phone && settings.phone !== shownWhatsapp && (
               <li>
                 <a href={`tel:${settings.phone}`} className="flex items-center gap-3 p-4 rounded-2xl bg-white/10 border border-white/15 hover:bg-white/15">
                   <Phone className="w-5 h-5 text-gold-300" /> {settings.phone}
                 </a>
               </li>
             )}
-            {settings?.whatsapp && (
-              <li className="flex items-center gap-3 p-4 rounded-2xl bg-white/10 border border-white/15">
-                <MessageCircle className="w-5 h-5 text-gold-300" /> WhatsApp: {settings.whatsapp}
+            {shownWhatsapp && (
+              <li>
+                <a
+                  href={contactLink || '#'}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-3 p-4 rounded-2xl bg-white/10 border border-white/15 hover:bg-white/15"
+                >
+                  <MessageCircle className="w-5 h-5 text-gold-300" /> WhatsApp: {shownWhatsapp}
+                </a>
               </li>
             )}
             {settings?.email && (
@@ -891,7 +977,14 @@ export default function LandingPage() {
       )}
 
       {selected && <ProductModal product={selected} currency={currency} onClose={() => setSelected(null)} onAdd={addToCart} />}
-      <CartDrawer open={cartOpen} onClose={() => setCartOpen(false)} cart={cart} currency={currency} waNumber={waNumber} />
+      <CartDrawer
+        open={cartOpen}
+        onClose={() => setCartOpen(false)}
+        cart={cart}
+        currency={currency}
+        waNumber={waNumber}
+        business={{ whatsapp: settings?.whatsapp || LANDING.whatsapp, address: settings?.address }}
+      />
     </div>
   )
 }

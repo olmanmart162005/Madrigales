@@ -40,7 +40,7 @@ export default function Sidebar({ mobileOpen, onMobileClose }) {
       if (onMobileClose) onMobileClose()
       await signOut()
       toast.success('Sesión cerrada correctamente')
-      navigate('/login')
+      navigate('/')
     } catch {
       toast.error('Error al cerrar sesión')
     }

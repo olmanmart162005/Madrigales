@@ -154,8 +154,8 @@ export default function InvoicePreviewModal({ isOpen, onClose, order, items = []
           </div>
 
           {/* TABLA DE PRODUCTOS Y PRESENTACIONES */}
-          <div className="border border-gray-200 rounded-2xl overflow-hidden">
-            <table className="w-full text-left text-xs">
+          <div className="border border-gray-200 rounded-2xl overflow-x-auto">
+            <table className="w-full min-w-[460px] text-left text-xs">
               <thead className="bg-purple-900 text-white font-bold">
                 <tr>
                   <th className="py-3 px-4">Descripción del Producto</th>

@@ -376,7 +376,7 @@ export default function OrderDetailPage() {
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
+          <table className="w-full min-w-[640px] text-left text-xs">
             <thead className="bg-gray-50 text-gray-600 font-bold border-b border-gray-100">
               <tr>
                 <th className="py-3 px-4">Producto & Presentación</th>

@@ -5,6 +5,9 @@
  *  Configuración → Datos del Negocio.)
  */
 export const LANDING = {
+  // Número que recibe los pedidos de la página web (si no hay uno en Configuración)
+  whatsapp: '+504 8751-6103',
+
   announcement: '🎄 Temporada navideña: reserva tu pedido con anticipación · ¡Cupos limitados!',
 
   hero: {

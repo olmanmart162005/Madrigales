@@ -206,7 +206,7 @@ export default function UsersPage() {
       {/* Tabla de Usuarios */}
       <div className="card bg-white border border-purple-100 shadow-xs overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
+          <table className="w-full min-w-[640px] text-left text-xs">
             <thead className="bg-purple-50/60 border-b border-purple-100 text-gray-700 font-bold uppercase tracking-wider">
               <tr>
                 <th className="px-4 py-3.5">Usuario</th>

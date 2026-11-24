@@ -1,5 +1,8 @@
 import jsPDF from 'jspdf'
-import autoTable from 'jspdf-autotable'
+import { applyPlugin } from 'jspdf-autotable'
+
+// Registra doc.autoTable() (forma compatible con el empaquetador)
+applyPlugin(jsPDF)
 import { formatDate, formatTime, formatCurrency } from '@/utils'
 
 /**
@@ -183,7 +186,7 @@ export async function generateOrderPDF(order, orderItems = [], settings = {}, em
     ]
   })
 
-  autoTable(doc, {
+  doc.autoTable({
     startY: 76,
     margin: { left: margin, right: margin },
     head: [['PRODUCTO & PRESENTACIÓN', 'CANT.', 'P. UNITARIO', 'SUBTOTAL']],

@@ -2,7 +2,8 @@ import React, { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { User, Lock, Eye, EyeOff, ArrowRight, Loader2 } from 'lucide-react'
+import { User, Lock, Eye, EyeOff, ArrowRight, Loader2, ArrowLeft } from 'lucide-react'
+import { Link } from 'react-router-dom'
 import { useAuthStore } from '@/store/authStore'
 import toast from 'react-hot-toast'
 
@@ -49,6 +50,12 @@ export default function LoginForm() {
   return (
     <div className="w-full lg:w-1/2 p-6 sm:p-10 md:p-12 flex flex-col justify-center bg-[#0C2418] text-white">
       <div className="max-w-md w-full mx-auto space-y-6">
+        <Link
+          to="/"
+          className="inline-flex items-center gap-1.5 text-xs font-semibold text-pine-200/80 hover:text-white transition-colors"
+        >
+          <ArrowLeft className="w-4 h-4" /> Volver a la página principal
+        </Link>
         {/* Encabezado con Logo Oficial con Fondo Blanco Elegante */}
         <div className="space-y-3 text-center">
           <div className="flex justify-center">
@@ -62,10 +69,15 @@ export default function LoginForm() {
           </div>
 
           <div>
-            <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white font-sans">
-              Iniciar Sesión
+            <h2 className="font-script text-5xl sm:text-6xl font-bold text-white leading-none drop-shadow-[0_2px_12px_rgba(200,16,46,0.55)]">
+              Iniciar <span className="text-purple-400">Sesión</span>
             </h2>
-            <p className="text-xs font-bold text-gold-300 uppercase tracking-[0.25em] mt-1">
+            <div className="flex items-center justify-center gap-2 mt-3" aria-hidden="true">
+              <span className="h-px w-10 bg-gradient-to-r from-transparent to-gold-300/70" />
+              <span className="text-gold-300 text-sm">✦</span>
+              <span className="h-px w-10 bg-gradient-to-l from-transparent to-gold-300/70" />
+            </div>
+            <p className="text-xs font-bold text-gold-300 uppercase tracking-[0.25em] mt-2">
               SISTEMA DE GESTIÓN & POS
             </p>
           </div>

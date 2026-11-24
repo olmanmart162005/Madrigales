@@ -33,8 +33,8 @@ export default function MovementHistoryModal({ isOpen, onClose, item }) {
         </div>
 
         {/* Tabla de Movimientos */}
-        <div className="border border-gray-100 rounded-xl overflow-hidden max-h-96 overflow-y-auto scrollbar-thin">
-          <table className="w-full text-left text-xs">
+        <div className="border border-gray-100 rounded-xl overflow-auto max-h-96 scrollbar-thin">
+          <table className="w-full min-w-[520px] text-left text-xs">
             <thead className="bg-gray-50 text-gray-500 uppercase tracking-wider font-semibold border-b border-gray-100 sticky top-0">
               <tr>
                 <th className="px-3.5 py-2.5">Fecha</th>

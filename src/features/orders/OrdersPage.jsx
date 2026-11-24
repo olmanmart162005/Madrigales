@@ -168,7 +168,7 @@ export default function OrdersPage() {
       {/* Tabla de Pedidos */}
       <div className="card bg-white border border-purple-100 shadow-sm overflow-visible">
         <div className="overflow-x-auto min-h-[320px] pb-6">
-          <table className="w-full text-left text-xs">
+          <table className="w-full min-w-[640px] text-left text-xs">
             <thead className="bg-purple-50/60 border-b border-purple-100 text-gray-700 font-bold uppercase tracking-wider">
               <tr>
                 <th className="px-4 py-3.5">N° Pedido</th>

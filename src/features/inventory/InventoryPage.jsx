@@ -174,7 +174,7 @@ export default function InventoryPage() {
       {/* Tabla de Almacén */}
       <div className="card overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
+          <table className="w-full min-w-[640px] text-left text-xs">
             <thead className="bg-gray-50 border-b border-gray-100 text-gray-500 uppercase tracking-wider font-semibold">
               <tr>
                 <th className="px-4 py-3.5">Materia Prima</th>
