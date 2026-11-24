@@ -306,6 +306,8 @@ function CartDrawer({ open, onClose, cart, currency, waNumber, business }) {
     const e = {}
     if (name.trim().length < 2) e.name = 'Escribe tu nombre.'
     if (phone.replace(/\D/g, '').length < 8) e.phone = 'Escribe un teléfono / WhatsApp válido.'
+    if (!date) e.date = 'Elige la fecha de entrega.'
+    else if (date < todayISO()) e.date = 'La fecha no puede ser anterior a hoy.'
     setErrors(e)
     return Object.keys(e).length === 0
   }
@@ -530,8 +532,17 @@ function CartDrawer({ open, onClose, cart, currency, waNumber, business }) {
                   {errors.phone && <span className="text-xs text-red-600 mt-1 block">{errors.phone}</span>}
                 </label>
                 <label className="block">
-                  <span className="label">Fecha deseada de entrega</span>
-                  <input type="date" min={todayISO()} value={date} onChange={(e) => setDate(e.target.value)} className="input" />
+                  <span className="label">Fecha deseada de entrega *</span>
+                  <input
+                    type="date"
+                    min={todayISO()}
+                    value={date}
+                    onChange={(e) => { setDate(e.target.value); setErrors((x) => ({ ...x, date: null })) }}
+                    className={`input ${field('date')}`}
+                    aria-invalid={!!errors.date}
+                    required
+                  />
+                  {errors.date && <span className="text-xs text-red-600 mt-1 block">{errors.date}</span>}
                 </label>
                 <label className="block">
                   <span className="label">Notas o personalización</span>

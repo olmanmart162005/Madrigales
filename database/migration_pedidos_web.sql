@@ -41,6 +41,7 @@ CREATE POLICY "Web: visitantes crean solicitudes" ON public.web_orders
     AND order_id IS NULL AND reject_reason IS NULL
     AND char_length(customer_name) BETWEEN 2 AND 80
     AND char_length(customer_phone) BETWEEN 7 AND 25
+    AND desired_date IS NOT NULL AND desired_date >= CURRENT_DATE - 1
     AND char_length(COALESCE(notes, '')) <= 600
     AND jsonb_typeof(items) = 'array'
     AND jsonb_array_length(items) BETWEEN 1 AND 40
