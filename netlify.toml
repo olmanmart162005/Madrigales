@@ -12,3 +12,15 @@
   from = "/*"
   to = "/index.html"
   status = 200
+
+# Archivos de actualización de la app: siempre revisar la versión más nueva
+[[headers]]
+  for = "/sw.js"
+  [headers.values]
+    Cache-Control = "no-cache, no-store, must-revalidate"
+
+[[headers]]
+  for = "/manifest.webmanifest"
+  [headers.values]
+    Content-Type = "application/manifest+json"
+    Cache-Control = "no-cache"

@@ -13,6 +13,17 @@ const updateSW = registerSW({
   onOfflineReady() {
     console.log('Nani Cake está lista para uso offline')
   },
+  // Buscar versiones nuevas también cuando la app vuelve a primer plano
+  // (en celular la app instalada puede quedar abierta días sin recargarse)
+  onRegisteredSW(_swUrl, registration) {
+    if (!registration) return
+    const check = () => registration.update().catch(() => {})
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') check()
+    })
+    window.addEventListener('focus', check)
+    setInterval(check, 30 * 60 * 1000)
+  },
   immediate: true,
 })
 
