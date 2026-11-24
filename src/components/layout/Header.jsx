@@ -6,7 +6,7 @@ import { getInitials } from '@/utils'
 import toast from 'react-hot-toast'
 
 const PAGE_NAMES = {
-  '/': 'Dashboard',
+  '/panel': 'Dashboard',
   '/pedidos': 'Pedidos & Facturación',
   '/pedidos/nuevo': 'Nuevo Pedido',
   '/calendario': 'Calendario de Entregas',

@@ -27,7 +27,7 @@ export default defineConfig({
         description: 'Sistema de gestión y punto de venta de Nani Cake',
         lang: 'es-HN',
         dir: 'ltr',
-        start_url: '/login',
+        start_url: '/',
         scope: '/',
         display: 'standalone',
         display_override: [

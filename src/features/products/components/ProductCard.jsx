@@ -1,5 +1,5 @@
 import React from 'react'
-import { Edit2, Power, Trash2, Package, Layers } from 'lucide-react'
+import { Edit2, Power, Trash2, Package, Layers, Star } from 'lucide-react'
 import { formatCurrency } from '@/utils'
 import { useAuthStore } from '@/store/authStore'
 import { useSettingsStore } from '@/store/settingsStore'
@@ -36,6 +36,11 @@ export default function ProductCard({ product, onEdit, onToggleStatus, onDelete 
 
         {/* Badges superiores */}
         <div className="absolute top-2 right-2 flex flex-col gap-1 items-end">
+          {product.is_featured && (
+            <span className="badge shadow-xs text-[10px] font-bold bg-gold-100 text-gold-800 border border-gold-300">
+              <Star className="w-3 h-3 mr-1 fill-gold-400 text-gold-500" /> Destacado web
+            </span>
+          )}
           <span
             className={`badge shadow-xs text-[10px] font-bold ${
               product.is_active

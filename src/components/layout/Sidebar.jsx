@@ -3,7 +3,7 @@ import { NavLink, useNavigate, Link } from 'react-router-dom'
 import {
   LayoutDashboard, ShoppingBag, Calendar, Package, Warehouse,
   BarChart3, Users, User, Settings,
-  LogOut, X, Crown, ChevronRight as RightArrow
+  LogOut, X, Crown, Globe, ChevronRight as RightArrow
 } from 'lucide-react'
 import { useAuthStore } from '@/store/authStore'
 import { getInitials } from '@/utils'
@@ -11,7 +11,7 @@ import toast from 'react-hot-toast'
 
 // Rutas base (accesibles según rol)
 const allNavItems = [
-  { to: '/', icon: LayoutDashboard, label: 'Dashboard', exact: true, cashier: true },
+  { to: '/panel', icon: LayoutDashboard, label: 'Dashboard', exact: true, cashier: true },
   { to: '/pedidos', icon: ShoppingBag, label: 'Pedidos', cashier: true },
   { to: '/productos', icon: Package, label: 'Productos', cashier: true },
   { to: '/calendario', icon: Calendar, label: 'Calendario', cashier: false },
@@ -28,6 +28,7 @@ const adminNavItems = [
 const accountNavItems = [
   { to: '/perfil', icon: User, label: 'Mi Perfil', cashier: true },
   { to: '/configuracion', icon: Settings, label: 'Configuración', cashier: false },
+  { to: '/', icon: Globe, label: 'Ver página web', cashier: true, exact: true },
 ]
 
 export default function Sidebar({ mobileOpen, onMobileClose }) {
@@ -173,6 +174,7 @@ export default function Sidebar({ mobileOpen, onMobileClose }) {
                 <NavLink
                   key={item.to}
                   to={item.to}
+              end={item.exact}
                   className={({ isActive }) =>
                     `flex items-center gap-3.5 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 group relative ${
                       isActive
@@ -203,6 +205,7 @@ export default function Sidebar({ mobileOpen, onMobileClose }) {
             <NavLink
               key={item.to}
               to={item.to}
+              end={item.exact}
               className={({ isActive }) =>
                 `flex items-center gap-3.5 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 group relative ${
                   isActive
@@ -314,6 +317,7 @@ export default function Sidebar({ mobileOpen, onMobileClose }) {
                 <NavLink
                   key={item.to}
                   to={item.to}
+              end={item.exact}
                   onClick={onMobileClose}
                   className={({ isActive }) =>
                     `flex items-center gap-3.5 px-4 py-3.5 rounded-xl text-sm font-semibold transition-all duration-200 ${
@@ -344,6 +348,7 @@ export default function Sidebar({ mobileOpen, onMobileClose }) {
             <NavLink
               key={item.to}
               to={item.to}
+              end={item.exact}
               onClick={onMobileClose}
               className={({ isActive }) =>
                 `flex items-center gap-3.5 px-4 py-3.5 rounded-xl text-sm font-semibold transition-all duration-200 ${

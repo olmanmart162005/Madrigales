@@ -1,5 +1,5 @@
 import React from 'react'
-import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { useAuthStore } from '@/store/authStore'
 import { PageLoader } from '@/components/ui/Skeleton'
 import AppLayout from '@/components/layout/AppLayout'
@@ -30,12 +30,12 @@ function ProtectedRoute({ children, adminOnly = false, ownerOnly = false }) {
 
   // Verificación de solo Owner
   if (ownerOnly && !isOwner()) {
-    return <Navigate to="/" replace />
+    return <Navigate to="/panel" replace />
   }
 
   // Verificación de Administradores (incluye al Owner)
   if (adminOnly && !isAdmin()) {
-    return <Navigate to="/" replace />
+    return <Navigate to="/panel" replace />
   }
 
   return children
@@ -46,23 +46,8 @@ function PublicRoute({ children }) {
   if (loading) return <PageLoader />
   
   const active = typeof isActive === 'function' ? isActive() : profile?.is_active !== false
-  if (user && active) return <Navigate to="/" replace />
+  if (user && active) return <Navigate to="/panel" replace />
   return children
-}
-
-/**
- * En "/" los visitantes sin sesión ven la landing pública de Nani Cake;
- * el personal con sesión ve el sistema (Dashboard).
- */
-function RootGate() {
-  const { user, loading } = useAuthStore()
-  const location = useLocation()
-  if (!loading && !user && location.pathname === '/') return <LandingPage />
-  return (
-    <ProtectedRoute>
-      <AppLayout />
-    </ProtectedRoute>
-  )
 }
 
 export default function AppRouter() {
@@ -70,7 +55,8 @@ export default function AppRouter() {
     <BrowserRouter>
       <React.Suspense fallback={<PageLoader />}>
         <Routes>
-          {/* Public */}
+          {/* Público: la página web de Nani Cake es lo primero que se ve */}
+          <Route path="/" element={<LandingPage />} />
           <Route path="/catalogo" element={<LandingPage />} />
           <Route
             path="/login"
@@ -82,8 +68,14 @@ export default function AppRouter() {
           />
 
           {/* Protected */}
-          <Route element={<RootGate />}>
-            <Route index element={<DashboardPage />} />
+          <Route
+            element={
+              <ProtectedRoute>
+                <AppLayout />
+              </ProtectedRoute>
+            }
+          >
+            <Route path="panel" element={<DashboardPage />} />
             <Route path="pedidos" element={<OrdersPage />} />
             <Route path="pedidos/nuevo" element={<NewOrderPage />} />
             <Route path="pedidos/:id" element={<OrderDetailPage />} />
